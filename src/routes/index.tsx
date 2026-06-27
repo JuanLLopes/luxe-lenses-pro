@@ -393,48 +393,42 @@ function Index() {
         </section>
 
         {/* Product list */}
-        <section className="mt-5 space-y-3">
+        <section className="mt-4 overflow-hidden rounded-2xl border border-border bg-card divide-y divide-border/70">
           {products.map((p) => {
             const idx = selectedVariant[p.id] ?? 0;
             const variant = p.variants[idx];
             return (
-              <article
-                key={p.id}
-                className="overflow-hidden rounded-3xl border border-border bg-[image:var(--gradient-card)] shadow-[var(--shadow-card)] transition-colors hover:border-primary/40"
-              >
-                <div className="flex gap-3 p-3">
-                  <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-2xl bg-background/60 ring-1 ring-border">
+              <div key={p.id} className="px-3 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-background/60 ring-1 ring-border">
                     <img
                       src={p.image}
                       alt={p.name}
                       loading="lazy"
-                      width={1024}
-                      height={1024}
                       className="h-full w-full object-cover"
                     />
                   </div>
-                  <div className="flex min-w-0 flex-1 flex-col">
-                    <h3 className="font-display text-sm font-bold leading-snug">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold leading-tight">
                       {p.name}
-                    </h3>
-                    <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
-                      {p.description}
                     </p>
-                    <div className="mt-auto flex items-end justify-between pt-2">
-                      <div>
-                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                          {variant.label}
-                        </p>
-                        <p className="font-display text-xl font-bold text-primary">
-                          {BRL(variant.price)}
-                        </p>
-                      </div>
-                    </div>
+                    <p className="mt-0.5 font-display text-sm font-bold text-primary">
+                      {BRL(variant.price)}
+                      <span className="ml-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                        {variant.label}
+                      </span>
+                    </p>
                   </div>
+                  <button
+                    onClick={() => (p.custom ? setCustomSheetId(p.id) : addToCart(p))}
+                    aria-label={`Adicionar ${p.name}`}
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-glow)] transition-transform active:scale-90"
+                  >
+                    <Plus className="h-5 w-5" strokeWidth={3} />
+                  </button>
                 </div>
-
-                <div className="border-t border-border/70 bg-background/30 p-3">
-                  <div className="flex flex-wrap items-center gap-1.5">
+                {p.variants.length > 1 && (
+                  <div className="mt-2 flex flex-wrap gap-1.5 pl-[68px]">
                     {p.variants.map((v, i) => {
                       const active = i === idx;
                       return (
@@ -443,142 +437,19 @@ function Index() {
                           onClick={() =>
                             setSelectedVariant((s) => ({ ...s, [p.id]: i }))
                           }
-                          className={`rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-all ${
+                          className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold transition-colors ${
                             active
-                              ? "border-primary bg-primary text-primary-foreground"
-                              : "border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                              ? "border-primary bg-primary/15 text-primary"
+                              : "border-border bg-background/40 text-muted-foreground hover:border-primary/40"
                           }`}
                         >
                           {v.label}
                         </button>
                       );
                     })}
-                    <button
-                      onClick={() => addToCart(p)}
-                      className="ml-auto inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-bold text-primary-foreground shadow-[var(--shadow-glow)] transition-transform active:scale-[0.97]"
-                    >
-                      <Plus className="h-3.5 w-3.5" strokeWidth={3} />
-                      Adicionar
-                    </button>
                   </div>
-
-                  {p.custom && (
-                    <div className="mt-3 space-y-3 rounded-2xl border border-primary/30 bg-background/60 p-3">
-                      <div>
-                        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-primary">
-                          Tipo de Tinta
-                        </p>
-                        <div className="grid grid-cols-2 gap-1.5">
-                          {(["Poliéster", "PU"] as const).map((t) => {
-                            const active = paintType === t;
-                            return (
-                              <button
-                                key={t}
-                                onClick={() => setPaintType(t)}
-                                className={`rounded-lg border px-2.5 py-2 text-xs font-semibold transition-all ${
-                                  active
-                                    ? "border-primary bg-primary text-primary-foreground"
-                                    : "border-border bg-card text-muted-foreground hover:border-primary/50"
-                                }`}
-                              >
-                                {t}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      <div>
-                        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-primary">
-                          Tamanho da Lata
-                        </p>
-                        <div className="grid grid-cols-2 gap-1.5">
-                          {p.variants.map((v, i) => {
-                            const active = i === idx;
-                            return (
-                              <button
-                                key={v.label}
-                                onClick={() =>
-                                  setSelectedVariant((s) => ({ ...s, [p.id]: i }))
-                                }
-                                className={`rounded-lg border px-2.5 py-2 text-xs font-semibold transition-all ${
-                                  active
-                                    ? "border-primary bg-primary text-primary-foreground"
-                                    : "border-border bg-card text-muted-foreground hover:border-primary/50"
-                                }`}
-                              >
-                                {v.label}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-primary">
-                          Código da Cor (Opcional)
-                        </label>
-                        <input
-                          type="text"
-                          value={colorCode}
-                          onChange={(e) => setColorCode(e.target.value.slice(0, 40))}
-                          placeholder="Ex: 297 / PRD"
-                          className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
-                        />
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => setShowColorHelp(true)}
-                        className="flex w-full items-center gap-2 rounded-lg border border-dashed border-primary/50 bg-primary/5 px-3 py-2.5 text-left text-xs font-semibold text-primary transition-colors hover:bg-primary/10"
-                      >
-                        <HelpCircle className="h-4 w-4 shrink-0" />
-                        🔍 Não sabe o código da cor do seu carro?
-                      </button>
-
-                      <div>
-                        <label
-                          htmlFor={`photo-${p.id}`}
-                          className="flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-card px-3 py-2.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
-                        >
-                          <Upload className="h-4 w-4 shrink-0 text-primary" />
-                          <span className="min-w-0 flex-1 truncate">
-                            {colorPhoto
-                              ? colorPhoto.name
-                              : "Anexar foto da etiqueta de cor do carro (Opcional)"}
-                          </span>
-                        </label>
-                        <input
-                          id={`photo-${p.id}`}
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={handlePhotoUpload}
-                        />
-                        {colorPhoto && (
-                          <div className="mt-2 flex items-center gap-2 rounded-lg border border-border bg-background/60 p-2">
-                            <img
-                              src={colorPhoto.dataUrl}
-                              alt="Etiqueta de cor"
-                              className="h-12 w-12 rounded object-cover ring-1 ring-border"
-                            />
-                            <span className="flex-1 truncate text-xs text-muted-foreground">
-                              {colorPhoto.name}
-                            </span>
-                            <button
-                              onClick={() => setColorPhoto(null)}
-                              className="rounded p-1 text-muted-foreground hover:text-foreground"
-                              aria-label="Remover foto"
-                            >
-                              <X className="h-4 w-4" />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </article>
+                )}
+              </div>
             );
           })}
         </section>
