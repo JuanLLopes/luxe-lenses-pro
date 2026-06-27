@@ -11,6 +11,11 @@ import {
   X,
   Upload,
   Palette,
+  Trash2,
+  Store,
+  Bike,
+  Send,
+  Download,
 } from "lucide-react";
 import shampooImg from "@/assets/shampoo-citrus.jpg";
 import ceraImg from "@/assets/cera-carnauba.jpg";
@@ -149,6 +154,12 @@ function Index() {
   const [colorCode, setColorCode] = useState("");
   const [colorPhoto, setColorPhoto] = useState<{ name: string; dataUrl: string } | null>(null);
   const [showColorHelp, setShowColorHelp] = useState(false);
+  const [showCart, setShowCart] = useState(false);
+  const [customerName, setCustomerName] = useState("");
+  const [delivery, setDelivery] = useState<"retirar" | "estafeta" | "">("");
+  const [nameError, setNameError] = useState(false);
+  const [deliveryError, setDeliveryError] = useState(false);
+  const WHATSAPP_NUMBER = "5511999999999"; // número da loja (formato internacional, só dígitos)
   const [cartItems, setCartItems] = useState<
     Array<{
       id: string;
@@ -195,6 +206,74 @@ function Index() {
       setColorPhoto({ name: file.name, dataUrl: String(reader.result) });
     };
     reader.readAsDataURL(file);
+  };
+
+  const removeCartItem = (index: number) => {
+    setCartItems((items) => {
+      const removed = items[index];
+      if (removed) {
+        setCartTotal((t) => Math.max(0, t - removed.price));
+        setCartCount((c) => Math.max(0, c - 1));
+      }
+      return items.filter((_, i) => i !== index);
+    });
+  };
+
+  const downloadPhoto = (dataUrl: string, name: string) => {
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = name || "etiqueta-cor.jpg";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  const buildWhatsAppMessage = () => {
+    const lines: string[] = [];
+    lines.push("🛒 *NOVO PEDIDO — Catálogo Inteligente*");
+    lines.push("");
+    lines.push(`👤 *Cliente:* ${customerName.trim()}`);
+    lines.push(
+      `🚚 *Entrega:* ${delivery === "retirar" ? "Retirar na Loja" : "Entrega via Estafeta/Motoboy"}`,
+    );
+    lines.push("");
+    lines.push("📦 *Itens do pedido:*");
+    cartItems.forEach((it, i) => {
+      lines.push(`${i + 1}. ${it.name} — ${it.variant} — ${BRL(it.price)}`);
+      if (it.custom) {
+        lines.push(`   🎨 Tipo: ${it.custom.paintType}`);
+        if (it.custom.colorCode) {
+          lines.push(`   🔢 Código da cor: ${it.custom.colorCode}`);
+        }
+        if (it.custom.photo) {
+          lines.push(
+            `   📎 Foto da etiqueta anexada: ${it.custom.photo.name} (enviarei a imagem em seguida nesta conversa)`,
+          );
+        }
+      }
+    });
+    lines.push("");
+    lines.push(`💰 *Total: ${BRL(cartTotal)}*`);
+    lines.push("");
+    lines.push("✅ Pedido feito pelo catálogo — concorrendo ao sorteio mensal Vonixx!");
+    return lines.join("\n");
+  };
+
+  const sendOrder = () => {
+    const validName = customerName.trim().length >= 2;
+    const validDelivery = delivery === "retirar" || delivery === "estafeta";
+    setNameError(!validName);
+    setDeliveryError(!validDelivery);
+    if (!validName || !validDelivery) return;
+
+    // Se houver fotos anexadas, dispara download para o cliente reenviar no WhatsApp
+    cartItems.forEach((it) => {
+      if (it.custom?.photo) downloadPhoto(it.custom.photo.dataUrl, it.custom.photo.name);
+    });
+
+    const text = encodeURIComponent(buildWhatsAppMessage());
+    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${text}`;
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -503,7 +582,10 @@ function Index() {
         {/* Cart summary footer (sticky) */}
         {cartCount > 0 && (
           <div className="fixed inset-x-0 bottom-3 z-40 mx-auto max-w-2xl px-4">
-            <div className="flex items-center justify-between gap-3 rounded-2xl border border-primary/40 bg-card/95 px-4 py-3 shadow-[var(--shadow-glow)] backdrop-blur">
+            <button
+              onClick={() => setShowCart(true)}
+              className="flex w-full items-center justify-between gap-3 rounded-2xl border border-primary/40 bg-card/95 px-4 py-3 text-left shadow-[var(--shadow-glow)] backdrop-blur transition-transform active:scale-[0.99]"
+            >
               <div className="min-w-0">
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
                   {cartCount} {cartCount === 1 ? "item" : "itens"} · total
@@ -512,10 +594,11 @@ function Index() {
                   {BRL(cartTotal)}
                 </p>
               </div>
-              <button className="rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground">
+              <span className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground">
+                <ShoppingCart className="h-4 w-4" />
                 Finalizar
-              </button>
-            </div>
+              </span>
+            </button>
           </div>
         )}
 
