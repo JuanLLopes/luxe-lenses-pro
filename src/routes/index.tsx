@@ -294,7 +294,10 @@ function Index() {
               </p>
             </div>
           </div>
-          <button className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-border bg-card transition-colors hover:border-primary">
+          <button
+            onClick={() => cartCount > 0 && setShowCart(true)}
+            className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-border bg-card transition-colors hover:border-primary"
+          >
             <ShoppingCart className="h-5 w-5 text-foreground" />
             {cartCount > 0 && (
               <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
