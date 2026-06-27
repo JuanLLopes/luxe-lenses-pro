@@ -19,6 +19,8 @@
  */
 
 @theme inline {
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-sans: "Inter", system-ui, sans-serif;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -62,26 +64,37 @@
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
+  --radius: 0.875rem;
+  /* Dark slate base + cyan accents */
+  --background: oklch(0.21 0.04 256);          /* slate-900 */
+  --foreground: oklch(0.97 0.01 240);
+  --card: oklch(0.26 0.04 256);                 /* slate-800 */
+  --card-foreground: oklch(0.97 0.01 240);
+  --popover: oklch(0.26 0.04 256);
+  --popover-foreground: oklch(0.97 0.01 240);
+  --primary: oklch(0.68 0.15 230);              /* cyan #0284c7-ish */
+  --primary-foreground: oklch(0.15 0.03 256);
+  --secondary: oklch(0.32 0.05 256);
+  --secondary-foreground: oklch(0.97 0.01 240);
+  --muted: oklch(0.3 0.04 256);
+  --muted-foreground: oklch(0.72 0.02 250);
+  --accent: oklch(0.68 0.15 230);
+  --accent-foreground: oklch(0.15 0.03 256);
+  --destructive: oklch(0.62 0.23 27);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.34 0.04 256);
+  --input: oklch(0.34 0.04 256);
+  --ring: oklch(0.68 0.15 230);
+
+  /* Brand */
+  --brand-cyan: #0284c7;
+  --brand-cyan-bright: #22d3ee;
+  --brand-blue-deep: #0c4a6e;
+
+  --gradient-promo: linear-gradient(135deg, #0c4a6e 0%, #0284c7 45%, #22d3ee 100%);
+  --gradient-card: linear-gradient(160deg, oklch(0.28 0.04 256) 0%, oklch(0.23 0.04 256) 100%);
+  --shadow-glow: 0 10px 40px -10px color-mix(in oklab, #0284c7 55%, transparent);
+  --shadow-card: 0 8px 24px -12px rgba(0, 0, 0, 0.6);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
