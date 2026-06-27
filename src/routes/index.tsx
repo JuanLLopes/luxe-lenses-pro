@@ -155,6 +155,7 @@ function Index() {
   const [colorPhoto, setColorPhoto] = useState<{ name: string; dataUrl: string } | null>(null);
   const [showColorHelp, setShowColorHelp] = useState(false);
   const [showCart, setShowCart] = useState(false);
+  const [customSheetId, setCustomSheetId] = useState<string | null>(null);
   const [customerName, setCustomerName] = useState("");
   const [delivery, setDelivery] = useState<"retirar" | "estafeta" | "">("");
   const [nameError, setNameError] = useState(false);
