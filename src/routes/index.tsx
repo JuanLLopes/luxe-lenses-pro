@@ -1,12 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Sparkles, Gift, ShoppingCart, Plus, Award, Trophy } from "lucide-react";
+import {
+  Sparkles,
+  Gift,
+  ShoppingCart,
+  Plus,
+  Award,
+  Trophy,
+  HelpCircle,
+  X,
+  Upload,
+  Palette,
+} from "lucide-react";
 import shampooImg from "@/assets/shampoo-citrus.jpg";
 import ceraImg from "@/assets/cera-carnauba.jpg";
 import pretinhoImg from "@/assets/pretinho.jpg";
 import tintaImg from "@/assets/tinta-spray.jpg";
 import canetaImg from "@/assets/caneta-retoque.jpg";
 import primerImg from "@/assets/primer.jpg";
+import personalizadaImg from "@/assets/tinta-personalizada.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -38,6 +50,7 @@ type Product = {
   image: string;
   category: Category;
   variants: Variant[];
+  custom?: boolean;
 };
 
 const PRODUCTS: Product[] = [
@@ -108,6 +121,19 @@ const PRODUCTS: Product[] = [
       { label: "900ml", price: 74.9 },
     ],
   },
+  {
+    id: "tinta-personalizada",
+    name: "Tinta Automotiva Personalizada",
+    description:
+      "Base Poliéster ou PU formulada na cor do seu carro. Informe o código ou anexe a etiqueta.",
+    image: personalizadaImg,
+    category: "tintas",
+    custom: true,
+    variants: [
+      { label: "Lata 900ml", price: 189.9 },
+      { label: "Tira-riscos 100ml", price: 49.9 },
+    ],
+  },
 ];
 
 const BRL = (v: number) =>
@@ -119,6 +145,19 @@ function Index() {
   const [cartTotal, setCartTotal] = useState(0);
   const [cartCount, setCartCount] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
+  const [paintType, setPaintType] = useState<"Poliéster" | "PU">("Poliéster");
+  const [colorCode, setColorCode] = useState("");
+  const [colorPhoto, setColorPhoto] = useState<{ name: string; dataUrl: string } | null>(null);
+  const [showColorHelp, setShowColorHelp] = useState(false);
+  const [cartItems, setCartItems] = useState<
+    Array<{
+      id: string;
+      name: string;
+      variant: string;
+      price: number;
+      custom?: { paintType: string; colorCode: string; photo: { name: string; dataUrl: string } | null };
+    }>
+  >([]);
 
   const products = useMemo(
     () => PRODUCTS.filter((p) => p.category === category),
@@ -130,11 +169,32 @@ function Index() {
   const addToCart = (p: Product) => {
     const idx = selectedVariant[p.id] ?? 0;
     const v = p.variants[idx];
+    const customData = p.custom
+      ? {
+          paintType,
+          colorCode: colorCode.trim(),
+          photo: colorPhoto,
+        }
+      : undefined;
+    setCartItems((items) => [
+      ...items,
+      { id: p.id, name: p.name, variant: v.label, price: v.price, custom: customData },
+    ]);
     setCartTotal((t) => t + v.price);
     setCartCount((c) => c + 1);
     setToast(`${p.name} (${v.label}) adicionado!`);
     window.clearTimeout((addToCart as any)._t);
     (addToCart as any)._t = window.setTimeout(() => setToast(null), 2200);
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setColorPhoto({ name: file.name, dataUrl: String(reader.result) });
+    };
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -318,6 +378,122 @@ function Index() {
                       Adicionar
                     </button>
                   </div>
+
+                  {p.custom && (
+                    <div className="mt-3 space-y-3 rounded-2xl border border-primary/30 bg-background/60 p-3">
+                      <div>
+                        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-primary">
+                          Tipo de Tinta
+                        </p>
+                        <div className="grid grid-cols-2 gap-1.5">
+                          {(["Poliéster", "PU"] as const).map((t) => {
+                            const active = paintType === t;
+                            return (
+                              <button
+                                key={t}
+                                onClick={() => setPaintType(t)}
+                                className={`rounded-lg border px-2.5 py-2 text-xs font-semibold transition-all ${
+                                  active
+                                    ? "border-primary bg-primary text-primary-foreground"
+                                    : "border-border bg-card text-muted-foreground hover:border-primary/50"
+                                }`}
+                              >
+                                {t}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-primary">
+                          Tamanho da Lata
+                        </p>
+                        <div className="grid grid-cols-2 gap-1.5">
+                          {p.variants.map((v, i) => {
+                            const active = i === idx;
+                            return (
+                              <button
+                                key={v.label}
+                                onClick={() =>
+                                  setSelectedVariant((s) => ({ ...s, [p.id]: i }))
+                                }
+                                className={`rounded-lg border px-2.5 py-2 text-xs font-semibold transition-all ${
+                                  active
+                                    ? "border-primary bg-primary text-primary-foreground"
+                                    : "border-border bg-card text-muted-foreground hover:border-primary/50"
+                                }`}
+                              >
+                                {v.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-primary">
+                          Código da Cor (Opcional)
+                        </label>
+                        <input
+                          type="text"
+                          value={colorCode}
+                          onChange={(e) => setColorCode(e.target.value.slice(0, 40))}
+                          placeholder="Ex: 297 / PRD"
+                          className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setShowColorHelp(true)}
+                        className="flex w-full items-center gap-2 rounded-lg border border-dashed border-primary/50 bg-primary/5 px-3 py-2.5 text-left text-xs font-semibold text-primary transition-colors hover:bg-primary/10"
+                      >
+                        <HelpCircle className="h-4 w-4 shrink-0" />
+                        🔍 Não sabe o código da cor do seu carro?
+                      </button>
+
+                      <div>
+                        <label
+                          htmlFor={`photo-${p.id}`}
+                          className="flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-card px-3 py-2.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
+                        >
+                          <Upload className="h-4 w-4 shrink-0 text-primary" />
+                          <span className="min-w-0 flex-1 truncate">
+                            {colorPhoto
+                              ? colorPhoto.name
+                              : "Anexar foto da etiqueta de cor do carro (Opcional)"}
+                          </span>
+                        </label>
+                        <input
+                          id={`photo-${p.id}`}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handlePhotoUpload}
+                        />
+                        {colorPhoto && (
+                          <div className="mt-2 flex items-center gap-2 rounded-lg border border-border bg-background/60 p-2">
+                            <img
+                              src={colorPhoto.dataUrl}
+                              alt="Etiqueta de cor"
+                              className="h-12 w-12 rounded object-cover ring-1 ring-border"
+                            />
+                            <span className="flex-1 truncate text-xs text-muted-foreground">
+                              {colorPhoto.name}
+                            </span>
+                            <button
+                              onClick={() => setColorPhoto(null)}
+                              className="rounded p-1 text-muted-foreground hover:text-foreground"
+                              aria-label="Remover foto"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </article>
             );
@@ -353,6 +529,72 @@ function Index() {
           </div>
         )}
       </main>
+
+      {/* Color help modal */}
+      {showColorHelp && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-4 backdrop-blur-sm sm:items-center"
+          onClick={() => setShowColorHelp(false)}
+        >
+          <div
+            className="w-full max-w-md overflow-hidden rounded-3xl border border-primary/40 bg-card shadow-[var(--shadow-glow)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              className="flex items-center justify-between px-5 py-4"
+              style={{ background: "var(--gradient-promo)" }}
+            >
+              <div className="flex items-center gap-2 text-white">
+                <Palette className="h-5 w-5" />
+                <p className="font-display text-base font-bold">Onde achar o código da cor</p>
+              </div>
+              <button
+                onClick={() => setShowColorHelp(false)}
+                className="rounded-full p-1 text-white/90 hover:bg-white/15"
+                aria-label="Fechar"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="space-y-3 p-5 text-sm">
+              <p className="text-muted-foreground">
+                Toda montadora coloca uma etiqueta com o código da tinta original em
+                pontos específicos do veículo. Confira por marca:
+              </p>
+              <ul className="space-y-2">
+                <li className="rounded-xl border border-border bg-background/60 p-3">
+                  <p className="font-bold text-primary">Fiat / Jeep / RAM</p>
+                  <p className="text-xs text-muted-foreground">
+                    Etiqueta na coluna da porta do motorista ou no interior da tampa do porta-malas.
+                  </p>
+                </li>
+                <li className="rounded-xl border border-border bg-background/60 p-3">
+                  <p className="font-bold text-primary">Volkswagen</p>
+                  <p className="text-xs text-muted-foreground">
+                    Coluna lateral do motorista, vão do motor ou na contracapa do manual do proprietário.
+                  </p>
+                </li>
+                <li className="rounded-xl border border-border bg-background/60 p-3">
+                  <p className="font-bold text-primary">Chevrolet / GM</p>
+                  <p className="text-xs text-muted-foreground">
+                    Coluna da porta do motorista (etiqueta "PNT/COR") ou manual do veículo.
+                  </p>
+                </li>
+                <li className="rounded-xl border border-border bg-background/60 p-3">
+                  <p className="font-bold text-primary">Ford / Hyundai / Toyota</p>
+                  <p className="text-xs text-muted-foreground">
+                    Geralmente na coluna da porta do motorista, identificada como "Paint" ou "Color Code".
+                  </p>
+                </li>
+              </ul>
+              <p className="rounded-xl border border-primary/30 bg-primary/10 p-3 text-xs text-foreground">
+                💡 Dica: se não encontrar, tire uma foto da etiqueta e anexe no campo
+                acima — nossa equipe identifica para você.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
