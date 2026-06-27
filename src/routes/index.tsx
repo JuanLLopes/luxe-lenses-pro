@@ -671,6 +671,161 @@ function Index() {
       )}
 
       {/* Color help modal */}
+      {customSheetId && (() => {
+        const p = PRODUCTS.find((x) => x.id === customSheetId);
+        if (!p) return null;
+        const idx = selectedVariant[p.id] ?? 0;
+        const variant = p.variants[idx];
+        return (
+          <div
+            className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center sm:p-4"
+            onClick={() => setCustomSheetId(null)}
+          >
+            <div
+              className="flex max-h-[92vh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border border-primary/40 bg-card shadow-[var(--shadow-glow)] sm:rounded-3xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div
+                className="flex items-center justify-between px-5 py-4"
+                style={{ background: "var(--gradient-promo)" }}
+              >
+                <div className="flex min-w-0 items-center gap-2 text-white">
+                  <Palette className="h-5 w-5 shrink-0" />
+                  <p className="truncate font-display text-base font-bold">{p.name}</p>
+                </div>
+                <button
+                  onClick={() => setCustomSheetId(null)}
+                  className="rounded-full p-1 text-white/90 hover:bg-white/15"
+                  aria-label="Fechar"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="flex-1 space-y-3 overflow-y-auto p-5">
+                <div>
+                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-primary">
+                    Tipo de Tinta
+                  </p>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {(["Poliéster", "PU"] as const).map((t) => {
+                      const active = paintType === t;
+                      return (
+                        <button
+                          key={t}
+                          onClick={() => setPaintType(t)}
+                          className={`rounded-lg border px-2.5 py-2 text-xs font-semibold transition-all ${
+                            active
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border bg-card text-muted-foreground hover:border-primary/50"
+                          }`}
+                        >
+                          {t}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div>
+                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-primary">
+                    Tamanho da Lata
+                  </p>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {p.variants.map((v, i) => {
+                      const active = i === idx;
+                      return (
+                        <button
+                          key={v.label}
+                          onClick={() => setSelectedVariant((s) => ({ ...s, [p.id]: i }))}
+                          className={`rounded-lg border px-2.5 py-2 text-xs font-semibold transition-all ${
+                            active
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border bg-card text-muted-foreground hover:border-primary/50"
+                          }`}
+                        >
+                          {v.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-primary">
+                    Código da Cor (Opcional)
+                  </label>
+                  <input
+                    type="text"
+                    value={colorCode}
+                    onChange={(e) => setColorCode(e.target.value.slice(0, 40))}
+                    placeholder="Ex: 297 / PRD"
+                    className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowColorHelp(true)}
+                  className="flex w-full items-center gap-2 rounded-lg border border-dashed border-primary/50 bg-primary/5 px-3 py-2.5 text-left text-xs font-semibold text-primary transition-colors hover:bg-primary/10"
+                >
+                  <HelpCircle className="h-4 w-4 shrink-0" />
+                  🔍 Não sabe o código da cor do seu carro?
+                </button>
+                <div>
+                  <label
+                    htmlFor={`photo-${p.id}`}
+                    className="flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-card px-3 py-2.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
+                  >
+                    <Upload className="h-4 w-4 shrink-0 text-primary" />
+                    <span className="min-w-0 flex-1 truncate">
+                      {colorPhoto
+                        ? colorPhoto.name
+                        : "Anexar foto da etiqueta de cor do carro (Opcional)"}
+                    </span>
+                  </label>
+                  <input
+                    id={`photo-${p.id}`}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handlePhotoUpload}
+                  />
+                  {colorPhoto && (
+                    <div className="mt-2 flex items-center gap-2 rounded-lg border border-border bg-background/60 p-2">
+                      <img
+                        src={colorPhoto.dataUrl}
+                        alt="Etiqueta de cor"
+                        className="h-12 w-12 rounded object-cover ring-1 ring-border"
+                      />
+                      <span className="flex-1 truncate text-xs text-muted-foreground">
+                        {colorPhoto.name}
+                      </span>
+                      <button
+                        onClick={() => setColorPhoto(null)}
+                        className="rounded p-1 text-muted-foreground hover:text-foreground"
+                        aria-label="Remover foto"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="border-t border-border bg-background/60 p-4">
+                <button
+                  onClick={() => {
+                    addToCart(p);
+                    setCustomSheetId(null);
+                  }}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
+                >
+                  <Plus className="h-4 w-4" strokeWidth={3} />
+                  Adicionar — {BRL(variant.price)}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Color help modal */}
       {showColorHelp && (
         <div
           className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-4 backdrop-blur-sm sm:items-center"
