@@ -11,6 +11,11 @@ import {
   X,
   Upload,
   Palette,
+  Trash2,
+  Store,
+  Bike,
+  Send,
+  Download,
 } from "lucide-react";
 import shampooImg from "@/assets/shampoo-citrus.jpg";
 import ceraImg from "@/assets/cera-carnauba.jpg";
@@ -149,6 +154,12 @@ function Index() {
   const [colorCode, setColorCode] = useState("");
   const [colorPhoto, setColorPhoto] = useState<{ name: string; dataUrl: string } | null>(null);
   const [showColorHelp, setShowColorHelp] = useState(false);
+  const [showCart, setShowCart] = useState(false);
+  const [customerName, setCustomerName] = useState("");
+  const [delivery, setDelivery] = useState<"retirar" | "estafeta" | "">("");
+  const [nameError, setNameError] = useState(false);
+  const [deliveryError, setDeliveryError] = useState(false);
+  const WHATSAPP_NUMBER = "5511999999999"; // número da loja (formato internacional, só dígitos)
   const [cartItems, setCartItems] = useState<
     Array<{
       id: string;
@@ -197,6 +208,74 @@ function Index() {
     reader.readAsDataURL(file);
   };
 
+  const removeCartItem = (index: number) => {
+    setCartItems((items) => {
+      const removed = items[index];
+      if (removed) {
+        setCartTotal((t) => Math.max(0, t - removed.price));
+        setCartCount((c) => Math.max(0, c - 1));
+      }
+      return items.filter((_, i) => i !== index);
+    });
+  };
+
+  const downloadPhoto = (dataUrl: string, name: string) => {
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = name || "etiqueta-cor.jpg";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  const buildWhatsAppMessage = () => {
+    const lines: string[] = [];
+    lines.push("🛒 *NOVO PEDIDO — Catálogo Inteligente*");
+    lines.push("");
+    lines.push(`👤 *Cliente:* ${customerName.trim()}`);
+    lines.push(
+      `🚚 *Entrega:* ${delivery === "retirar" ? "Retirar na Loja" : "Entrega via Estafeta/Motoboy"}`,
+    );
+    lines.push("");
+    lines.push("📦 *Itens do pedido:*");
+    cartItems.forEach((it, i) => {
+      lines.push(`${i + 1}. ${it.name} — ${it.variant} — ${BRL(it.price)}`);
+      if (it.custom) {
+        lines.push(`   🎨 Tipo: ${it.custom.paintType}`);
+        if (it.custom.colorCode) {
+          lines.push(`   🔢 Código da cor: ${it.custom.colorCode}`);
+        }
+        if (it.custom.photo) {
+          lines.push(
+            `   📎 Foto da etiqueta anexada: ${it.custom.photo.name} (enviarei a imagem em seguida nesta conversa)`,
+          );
+        }
+      }
+    });
+    lines.push("");
+    lines.push(`💰 *Total: ${BRL(cartTotal)}*`);
+    lines.push("");
+    lines.push("✅ Pedido feito pelo catálogo — concorrendo ao sorteio mensal Vonixx!");
+    return lines.join("\n");
+  };
+
+  const sendOrder = () => {
+    const validName = customerName.trim().length >= 2;
+    const validDelivery = delivery === "retirar" || delivery === "estafeta";
+    setNameError(!validName);
+    setDeliveryError(!validDelivery);
+    if (!validName || !validDelivery) return;
+
+    // Se houver fotos anexadas, dispara download para o cliente reenviar no WhatsApp
+    cartItems.forEach((it) => {
+      if (it.custom?.photo) downloadPhoto(it.custom.photo.dataUrl, it.custom.photo.name);
+    });
+
+    const text = encodeURIComponent(buildWhatsAppMessage());
+    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${text}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
   return (
     <div className="min-h-screen bg-background font-sans text-foreground">
       {/* Top bar */}
@@ -215,7 +294,10 @@ function Index() {
               </p>
             </div>
           </div>
-          <button className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-border bg-card transition-colors hover:border-primary">
+          <button
+            onClick={() => cartCount > 0 && setShowCart(true)}
+            className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-border bg-card transition-colors hover:border-primary"
+          >
             <ShoppingCart className="h-5 w-5 text-foreground" />
             {cartCount > 0 && (
               <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
@@ -503,7 +585,10 @@ function Index() {
         {/* Cart summary footer (sticky) */}
         {cartCount > 0 && (
           <div className="fixed inset-x-0 bottom-3 z-40 mx-auto max-w-2xl px-4">
-            <div className="flex items-center justify-between gap-3 rounded-2xl border border-primary/40 bg-card/95 px-4 py-3 shadow-[var(--shadow-glow)] backdrop-blur">
+            <button
+              onClick={() => setShowCart(true)}
+              className="flex w-full items-center justify-between gap-3 rounded-2xl border border-primary/40 bg-card/95 px-4 py-3 text-left shadow-[var(--shadow-glow)] backdrop-blur transition-transform active:scale-[0.99]"
+            >
               <div className="min-w-0">
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
                   {cartCount} {cartCount === 1 ? "item" : "itens"} · total
@@ -512,10 +597,11 @@ function Index() {
                   {BRL(cartTotal)}
                 </p>
               </div>
-              <button className="rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground">
+              <span className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground">
+                <ShoppingCart className="h-4 w-4" />
                 Finalizar
-              </button>
-            </div>
+              </span>
+            </button>
           </div>
         )}
 
@@ -529,6 +615,188 @@ function Index() {
           </div>
         )}
       </main>
+
+      {/* Cart drawer */}
+      {showCart && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center sm:p-4"
+          onClick={() => setShowCart(false)}
+        >
+          <div
+            className="flex max-h-[92vh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border border-primary/40 bg-card shadow-[var(--shadow-glow)] sm:rounded-3xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              className="flex items-center justify-between px-5 py-4"
+              style={{ background: "var(--gradient-promo)" }}
+            >
+              <div className="flex items-center gap-2 text-white">
+                <ShoppingCart className="h-5 w-5" />
+                <p className="font-display text-base font-bold">Seu Pedido</p>
+              </div>
+              <button
+                onClick={() => setShowCart(false)}
+                className="rounded-full p-1 text-white/90 hover:bg-white/15"
+                aria-label="Fechar"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="flex-1 space-y-4 overflow-y-auto p-5">
+              {/* Itens */}
+              <div className="space-y-2">
+                {cartItems.length === 0 && (
+                  <p className="text-center text-sm text-muted-foreground">
+                    Carrinho vazio.
+                  </p>
+                )}
+                {cartItems.map((it, i) => (
+                  <div
+                    key={i}
+                    className="rounded-xl border border-border bg-background/60 p-3"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold">{it.name}</p>
+                        <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                          {it.variant}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <p className="font-display text-sm font-bold text-primary">
+                          {BRL(it.price)}
+                        </p>
+                        <button
+                          onClick={() => removeCartItem(i)}
+                          className="rounded p-1 text-muted-foreground hover:text-destructive"
+                          aria-label="Remover"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                    {it.custom && (
+                      <div className="mt-2 space-y-1 rounded-lg border border-primary/30 bg-primary/5 p-2 text-[11px]">
+                        <p>
+                          <span className="text-muted-foreground">Tipo:</span>{" "}
+                          <span className="font-semibold">{it.custom.paintType}</span>
+                        </p>
+                        {it.custom.colorCode && (
+                          <p>
+                            <span className="text-muted-foreground">Código:</span>{" "}
+                            <span className="font-semibold">{it.custom.colorCode}</span>
+                          </p>
+                        )}
+                        {it.custom.photo && (
+                          <div className="flex items-center gap-2 pt-1">
+                            <img
+                              src={it.custom.photo.dataUrl}
+                              alt="Etiqueta"
+                              className="h-10 w-10 rounded object-cover ring-1 ring-border"
+                            />
+                            <span className="flex-1 truncate text-muted-foreground">
+                              {it.custom.photo.name}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Nome */}
+              <div>
+                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-primary">
+                  Seu Nome
+                </label>
+                <input
+                  type="text"
+                  value={customerName}
+                  onChange={(e) => {
+                    setCustomerName(e.target.value.slice(0, 80));
+                    if (nameError) setNameError(false);
+                  }}
+                  placeholder="Nome completo"
+                  className={`w-full rounded-lg border bg-card px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none ${
+                    nameError ? "border-destructive" : "border-border focus:border-primary"
+                  }`}
+                />
+                {nameError && (
+                  <p className="mt-1 text-[11px] text-destructive">Informe seu nome.</p>
+                )}
+              </div>
+
+              {/* Entrega */}
+              <div>
+                <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-primary">
+                  Forma de Entrega
+                </p>
+                <div className="grid grid-cols-1 gap-2">
+                  {[
+                    { id: "retirar" as const, label: "Retirar na Loja", icon: Store },
+                    { id: "estafeta" as const, label: "Entrega via Estafeta/Motoboy", icon: Bike },
+                  ].map(({ id, label, icon: Icon }) => {
+                    const active = delivery === id;
+                    return (
+                      <button
+                        key={id}
+                        onClick={() => {
+                          setDelivery(id);
+                          setDeliveryError(false);
+                        }}
+                        className={`flex items-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-semibold transition-all ${
+                          active
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-border bg-card text-muted-foreground hover:border-primary/50"
+                        }`}
+                      >
+                        <Icon className="h-4 w-4" />
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+                {deliveryError && (
+                  <p className="mt-1 text-[11px] text-destructive">
+                    Selecione uma forma de entrega.
+                  </p>
+                )}
+              </div>
+
+              {cartItems.some((it) => it.custom?.photo) && (
+                <div className="flex items-start gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3 text-[11px] text-foreground">
+                  <Download className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <p>
+                    A foto da etiqueta de cor será baixada automaticamente — basta
+                    anexá-la na conversa do WhatsApp após enviar o pedido.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="border-t border-border bg-background/60 p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-xs uppercase tracking-widest text-muted-foreground">
+                  Total
+                </span>
+                <span className="font-display text-xl font-bold text-primary">
+                  {BRL(cartTotal)}
+                </span>
+              </div>
+              <button
+                onClick={sendOrder}
+                disabled={cartItems.length === 0}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 py-3 text-sm font-bold text-white shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Send className="h-4 w-4" />
+                Concluir e Enviar Pedido por WhatsApp
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Color help modal */}
       {showColorHelp && (
