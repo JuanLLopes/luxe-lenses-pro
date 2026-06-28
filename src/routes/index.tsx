@@ -23,6 +23,7 @@ import pretinhoImg from "@/assets/pretinho.jpg";
 import canetaImg from "@/assets/caneta-retoque.jpg";
 import personalizadaImg from "@/assets/tinta-personalizada.jpg";
 import tintaImg from "@/assets/tinta-spray.jpg";
+import { PRONTAS_COLORS, MONTADORAS, type ProntaCor } from "@/data/prontas-colors";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -818,21 +819,45 @@ function TiraRiscosPanel({
 function ProntasPanel({ onAdd }: { onAdd: (item: Omit<CartItem, "uid">) => void }) {
   const [marca, setMarca] = useState<(typeof PRONTAS_MARCAS)[number]>("Brazilian");
   const [tipoIdx, setTipoIdx] = useState(0);
-  const [corNome, setCorNome] = useState("");
   const [endurecedor, setEndurecedor] = useState(false);
   const [err, setErr] = useState(false);
   const tipo = PRONTAS_TIPOS[tipoIdx];
 
+  const [montadora, setMontadora] = useState<string>("");
+  const [corQuery, setCorQuery] = useState("");
+  const [selectedCor, setSelectedCor] = useState<ProntaCor | null>(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const availableColors: ProntaCor[] = montadora
+    ? PRONTAS_COLORS[marca]?.[montadora] ?? []
+    : [];
+  const filteredColors = corQuery.trim()
+    ? availableColors.filter((c) =>
+        c.nome.toLowerCase().includes(corQuery.trim().toLowerCase()),
+      )
+    : availableColors;
+
+  // preço dinâmico: cor selecionada sobrescreve preço-base do tipo
+  const basePrice = selectedCor ? selectedCor.preco : tipo.price;
+  const finalPrice = basePrice + (tipo.tipo === "PU" && endurecedor ? ENDURECEDOR_PRICE : 0);
+
+  // reset cor ao trocar marca/montadora
+  const resetCor = () => {
+    setSelectedCor(null);
+    setCorQuery("");
+  };
+
   const submit = () => {
-    if (!corNome.trim()) {
+    if (!montadora || !selectedCor) {
       setErr(true);
       return;
     }
     const isPU = tipo.tipo === "PU";
-    const total = tipo.price + (isPU && endurecedor ? ENDURECEDOR_PRICE : 0);
+    const total = finalPrice;
     const meta = [
       { label: "Marca", value: marca },
-      { label: "Cor (Pronta de Fábrica)", value: corNome.trim() },
+      { label: "Montadora", value: montadora },
+      { label: "Cor (Pronta de Fábrica)", value: selectedCor.nome },
       { label: "Tipo", value: tipo.tipo },
       { label: "Tamanho", value: tipo.tamanho },
     ];
@@ -840,12 +865,15 @@ function ProntasPanel({ onAdd }: { onAdd: (item: Omit<CartItem, "uid">) => void 
       meta.push({ label: "Endurecedor (225ml)", value: `Incluso (+${BRL(ENDURECEDOR_PRICE)})` });
     }
     onAdd({
-      name: `Tinta Pronta ${marca} — ${tipo.tipo}`,
+      name: `Tinta Pronta ${marca} — ${tipo.tipo} (${montadora})`,
       variant: tipo.tamanho,
       price: total,
       meta,
     });
-    setCorNome(""); setEndurecedor(false); setErr(false);
+    setSelectedCor(null);
+    setCorQuery("");
+    setEndurecedor(false);
+    setErr(false);
   };
 
   return (
@@ -863,17 +891,112 @@ function ProntasPanel({ onAdd }: { onAdd: (item: Omit<CartItem, "uid">) => void 
       <FieldGroup label="Marca">
         <div className="grid grid-cols-2 gap-1.5">
           {PRONTAS_MARCAS.map((m) => (
-            <Pill key={m} active={marca === m} onClick={() => setMarca(m)}>{m}</Pill>
+            <Pill
+              key={m}
+              active={marca === m}
+              onClick={() => {
+                setMarca(m);
+                resetCor();
+              }}
+            >
+              {m}
+            </Pill>
           ))}
         </div>
       </FieldGroup>
 
-      <FieldInput
-        label="Cor Pronta de Fábrica"
-        value={corNome}
-        onChange={setCorNome}
-        placeholder="Ex: Branco Cristal, Preto Ônix..."
-      />
+      <FieldGroup label="Selecione a Montadora">
+        <select
+          value={montadora}
+          onChange={(e) => {
+            setMontadora(e.target.value);
+            resetCor();
+          }}
+          className="w-full rounded-lg border border-border bg-background/40 px-2.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+        >
+          <option value="">— Escolha a montadora —</option>
+          {MONTADORAS.map((m) => (
+            <option key={m} value={m}>{m}</option>
+          ))}
+        </select>
+      </FieldGroup>
+
+      <FieldGroup label="Cor (busca preditiva)">
+        <div className="relative">
+          <input
+            type="text"
+            value={corQuery}
+            disabled={!montadora}
+            onChange={(e) => {
+              setCorQuery(e.target.value);
+              setSelectedCor(null);
+              setShowSuggestions(true);
+            }}
+            onFocus={() => setShowSuggestions(true)}
+            onBlur={() => window.setTimeout(() => setShowSuggestions(false), 150)}
+            placeholder={
+              montadora
+                ? `Digite para buscar (ex: Prat...) — ${availableColors.length} cores`
+                : "Escolha a montadora primeiro"
+            }
+            className="w-full rounded-lg border border-border bg-background/40 px-2.5 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none disabled:opacity-60"
+          />
+          {showSuggestions && montadora && filteredColors.length > 0 && !selectedCor && (
+            <ul className="absolute z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-primary/40 bg-card shadow-[var(--shadow-glow)]">
+              {filteredColors.map((c) => (
+                <li key={c.nome}>
+                  <button
+                    type="button"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      setSelectedCor(c);
+                      setCorQuery(c.nome);
+                      setShowSuggestions(false);
+                    }}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-primary/15"
+                  >
+                    {c.hex && (
+                      <span
+                        className="h-4 w-4 shrink-0 rounded-full ring-1 ring-border"
+                        style={{ background: c.hex }}
+                      />
+                    )}
+                    <span className="flex-1 truncate font-semibold">{c.nome}</span>
+                    <span className="shrink-0 font-display text-[11px] font-bold text-primary">
+                      {BRL(c.preco)}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {showSuggestions && montadora && filteredColors.length === 0 && (
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              Nenhuma cor encontrada para "{corQuery}".
+            </p>
+          )}
+        </div>
+        {selectedCor && (
+          <div className="mt-2 flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/10 p-2 text-[11px]">
+            {selectedCor.hex && (
+              <span
+                className="h-5 w-5 shrink-0 rounded-full ring-1 ring-border"
+                style={{ background: selectedCor.hex }}
+              />
+            )}
+            <span className="flex-1 truncate font-semibold">{selectedCor.nome}</span>
+            <span className="font-display font-bold text-primary">{BRL(selectedCor.preco)}</span>
+            <button
+              type="button"
+              onClick={resetCor}
+              className="rounded p-0.5 text-muted-foreground hover:text-foreground"
+              aria-label="Limpar cor"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
+      </FieldGroup>
 
       <FieldGroup label="Tipo de Tinta">
         <div className="grid grid-cols-2 gap-1.5">
@@ -884,7 +1007,12 @@ function ProntasPanel({ onAdd }: { onAdd: (item: Omit<CartItem, "uid">) => void 
           ))}
         </div>
         <p className="mt-1.5 text-[11px] text-muted-foreground">
-          Tamanho: <span className="font-semibold text-foreground">{tipo.tamanho}</span> · {BRL(tipo.price)}
+          Tamanho: <span className="font-semibold text-foreground">{tipo.tamanho}</span>
+          {selectedCor ? (
+            <> · Cor: <span className="font-semibold text-foreground">{BRL(selectedCor.preco)}</span></>
+          ) : (
+            <> · base {BRL(tipo.price)}</>
+          )}
         </p>
       </FieldGroup>
 
@@ -900,13 +1028,17 @@ function ProntasPanel({ onAdd }: { onAdd: (item: Omit<CartItem, "uid">) => void 
         </label>
       )}
 
-      {err && <p className="text-[11px] text-destructive">Informe o nome da cor.</p>}
+      {err && (
+        <p className="text-[11px] text-destructive">
+          Selecione a montadora e escolha uma cor na lista.
+        </p>
+      )}
       <button
         onClick={submit}
         className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground shadow-[var(--shadow-glow)] active:scale-[0.98]"
       >
         <Plus className="h-4 w-4" strokeWidth={3} />
-        Adicionar — {BRL(tipo.price + (tipo.tipo === "PU" && endurecedor ? ENDURECEDOR_PRICE : 0))}
+        Adicionar — {BRL(finalPrice)}
       </button>
     </div>
   );
