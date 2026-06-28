@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   Sparkles,
   Gift,
@@ -730,6 +730,394 @@ function Index() {
               </p>
             </div>
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* =========================================================
+   Panel: Tira-Riscos / Pequenos Retoques
+========================================================= */
+function TiraRiscosPanel({
+  onAdd,
+  onOpenHelp,
+}: {
+  onAdd: (item: Omit<CartItem, "uid">) => void;
+  onOpenHelp: () => void;
+}) {
+  const [marca, setMarca] = useState("");
+  const [modelo, setModelo] = useState("");
+  const [ano, setAno] = useState("");
+  const [cor, setCor] = useState("");
+  const [photo, setPhoto] = useState<{ name: string; dataUrl: string } | null>(null);
+  const [err, setErr] = useState(false);
+
+  const submit = () => {
+    if (!marca.trim() || !modelo.trim() || !ano.trim() || !cor.trim()) {
+      setErr(true);
+      return;
+    }
+    onAdd({
+      name: "Kit Tira-Riscos (100ml)",
+      variant: "100ml",
+      price: KIT_TIRA_RISCOS_PRICE,
+      meta: [
+        { label: "Marca", value: marca.trim() },
+        { label: "Modelo", value: modelo.trim() },
+        { label: "Ano", value: ano.trim() },
+        { label: "Cor", value: cor.trim() },
+      ],
+      photo,
+    });
+    setMarca(""); setModelo(""); setAno(""); setCor(""); setPhoto(null); setErr(false);
+  };
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4 space-y-3">
+      <div className="flex items-center gap-3">
+        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg ring-1 ring-border">
+          <img src={canetaImg} alt="Kit Tira-Riscos" className="h-full w-full object-cover" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold leading-tight">Kit Tira-Riscos (100ml)</p>
+          <p className="font-display text-sm font-bold text-primary">{BRL(KIT_TIRA_RISCOS_PRICE)}</p>
+        </div>
+      </div>
+      <p className="text-[11px] text-muted-foreground">
+        Preencha os dados do seu veículo para formularmos a cor exata.
+      </p>
+      <div className="grid grid-cols-2 gap-2">
+        <FieldInput label="Marca" value={marca} onChange={setMarca} placeholder="Ex: Fiat" />
+        <FieldInput label="Modelo" value={modelo} onChange={setModelo} placeholder="Ex: Argo" />
+        <FieldInput label="Ano" value={ano} onChange={setAno} placeholder="Ex: 2022" />
+        <FieldInput label="Nome / Código da Cor" value={cor} onChange={setCor} placeholder="Ex: Branco 297" />
+      </div>
+      <button
+        onClick={onOpenHelp}
+        className="flex w-full items-center gap-2 rounded-lg border border-dashed border-primary/50 bg-primary/5 px-3 py-2 text-left text-[11px] font-semibold text-primary hover:bg-primary/10"
+      >
+        <HelpCircle className="h-4 w-4 shrink-0" />
+        🔍 Não sabe o código da cor do seu carro?
+      </button>
+      <PhotoField photo={photo} onChange={setPhoto} />
+      {err && <p className="text-[11px] text-destructive">Preencha marca, modelo, ano e cor.</p>}
+      <button
+        onClick={submit}
+        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground shadow-[var(--shadow-glow)] active:scale-[0.98]"
+      >
+        <Plus className="h-4 w-4" strokeWidth={3} /> Adicionar ao Carrinho
+      </button>
+    </div>
+  );
+}
+
+/* =========================================================
+   Panel: Tintas Prontas de Fábrica
+========================================================= */
+function ProntasPanel({ onAdd }: { onAdd: (item: Omit<CartItem, "uid">) => void }) {
+  const [marca, setMarca] = useState<(typeof PRONTAS_MARCAS)[number]>("Brazilian");
+  const [tipoIdx, setTipoIdx] = useState(0);
+  const [corNome, setCorNome] = useState("");
+  const [endurecedor, setEndurecedor] = useState(false);
+  const [err, setErr] = useState(false);
+  const tipo = PRONTAS_TIPOS[tipoIdx];
+
+  const submit = () => {
+    if (!corNome.trim()) {
+      setErr(true);
+      return;
+    }
+    const isPU = tipo.tipo === "PU";
+    const total = tipo.price + (isPU && endurecedor ? ENDURECEDOR_PRICE : 0);
+    const meta = [
+      { label: "Marca", value: marca },
+      { label: "Cor (Pronta de Fábrica)", value: corNome.trim() },
+      { label: "Tipo", value: tipo.tipo },
+      { label: "Tamanho", value: tipo.tamanho },
+    ];
+    if (isPU && endurecedor) {
+      meta.push({ label: "Endurecedor (225ml)", value: `Incluso (+${BRL(ENDURECEDOR_PRICE)})` });
+    }
+    onAdd({
+      name: `Tinta Pronta ${marca} — ${tipo.tipo}`,
+      variant: tipo.tamanho,
+      price: total,
+      meta,
+    });
+    setCorNome(""); setEndurecedor(false); setErr(false);
+  };
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4 space-y-3">
+      <div className="flex items-center gap-3">
+        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg ring-1 ring-border">
+          <img src={personalizadaImg} alt="Tinta Pronta" className="h-full w-full object-cover" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold leading-tight">Tintas Prontas de Fábrica</p>
+          <p className="text-[11px] text-muted-foreground">Embalagens fechadas, cores de catálogo.</p>
+        </div>
+      </div>
+
+      <FieldGroup label="Marca">
+        <div className="grid grid-cols-2 gap-1.5">
+          {PRONTAS_MARCAS.map((m) => (
+            <Pill key={m} active={marca === m} onClick={() => setMarca(m)}>{m}</Pill>
+          ))}
+        </div>
+      </FieldGroup>
+
+      <FieldInput
+        label="Cor Pronta de Fábrica"
+        value={corNome}
+        onChange={setCorNome}
+        placeholder="Ex: Branco Cristal, Preto Ônix..."
+      />
+
+      <FieldGroup label="Tipo de Tinta">
+        <div className="grid grid-cols-2 gap-1.5">
+          {PRONTAS_TIPOS.map((t, i) => (
+            <Pill key={t.tipo} active={tipoIdx === i} onClick={() => { setTipoIdx(i); setEndurecedor(false); }}>
+              {t.tipo}
+            </Pill>
+          ))}
+        </div>
+        <p className="mt-1.5 text-[11px] text-muted-foreground">
+          Tamanho: <span className="font-semibold text-foreground">{tipo.tamanho}</span> · {BRL(tipo.price)}
+        </p>
+      </FieldGroup>
+
+      {tipo.tipo === "PU" && (
+        <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 p-2.5 text-[12px]">
+          <input
+            type="checkbox"
+            checked={endurecedor}
+            onChange={(e) => setEndurecedor(e.target.checked)}
+            className="h-4 w-4 accent-primary"
+          />
+          <span>Acompanhar Endurecedor (225ml) <span className="text-muted-foreground">+ {BRL(ENDURECEDOR_PRICE)}</span></span>
+        </label>
+      )}
+
+      {err && <p className="text-[11px] text-destructive">Informe o nome da cor.</p>}
+      <button
+        onClick={submit}
+        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground shadow-[var(--shadow-glow)] active:scale-[0.98]"
+      >
+        <Plus className="h-4 w-4" strokeWidth={3} />
+        Adicionar — {BRL(tipo.price + (tipo.tipo === "PU" && endurecedor ? ENDURECEDOR_PRICE : 0))}
+      </button>
+    </div>
+  );
+}
+
+/* =========================================================
+   Panel: Tintas Pesadas na Hora (Laboratório)
+========================================================= */
+function PesadasPanel({
+  onAdd,
+  onOpenHelp,
+}: {
+  onAdd: (item: Omit<CartItem, "uid">) => void;
+  onOpenHelp: () => void;
+}) {
+  const [marca, setMarca] = useState<(typeof PESADAS_MARCAS)[number]>("Brazilian");
+  const [veicMarca, setVeicMarca] = useState("");
+  const [modelo, setModelo] = useState("");
+  const [ano, setAno] = useState("");
+  const [cor, setCor] = useState("");
+  const [fracIdx, setFracIdx] = useState(6); // 1 Quarto default
+  const [photo, setPhoto] = useState<{ name: string; dataUrl: string } | null>(null);
+  const [err, setErr] = useState(false);
+  const frac = FRACTIONS[fracIdx];
+  const price = Math.round(frac.ml * PESADAS_PRICE_PER_ML * 10) / 10;
+
+  const submit = () => {
+    if (!veicMarca.trim() || !modelo.trim() || !ano.trim() || !cor.trim()) {
+      setErr(true);
+      return;
+    }
+    onAdd({
+      name: `Tinta Pesada na Hora — ${marca}`,
+      variant: `${frac.label} (${frac.ml.toLocaleString("pt-BR")}ml)`,
+      price,
+      meta: [
+        { label: "Sistema de Pesagem", value: marca },
+        { label: "Marca Veículo", value: veicMarca.trim() },
+        { label: "Modelo", value: modelo.trim() },
+        { label: "Ano", value: ano.trim() },
+        { label: "Nome / Código da Cor", value: cor.trim() },
+        { label: "Fração", value: `${frac.label} (${frac.ml.toLocaleString("pt-BR")}ml)` },
+      ],
+      photo,
+    });
+    setVeicMarca(""); setModelo(""); setAno(""); setCor(""); setPhoto(null); setErr(false);
+  };
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4 space-y-3">
+      <div className="flex items-center gap-3">
+        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg ring-1 ring-border">
+          <img src={tintaImg} alt="Tinta Pesada" className="h-full w-full object-cover" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold leading-tight">Tinta Pesada na Hora</p>
+          <p className="text-[11px] text-muted-foreground">Fórmula e pesagem por laboratório.</p>
+        </div>
+      </div>
+
+      <FieldGroup label="Sistema de Pesagem">
+        <div className="grid grid-cols-2 gap-1.5">
+          {PESADAS_MARCAS.map((m) => (
+            <Pill key={m} active={marca === m} onClick={() => setMarca(m)}>{m}</Pill>
+          ))}
+        </div>
+      </FieldGroup>
+
+      <div className="grid grid-cols-2 gap-2">
+        <FieldInput label="Marca" value={veicMarca} onChange={setVeicMarca} placeholder="Ex: VW" />
+        <FieldInput label="Modelo" value={modelo} onChange={setModelo} placeholder="Ex: Polo" />
+        <FieldInput label="Ano" value={ano} onChange={setAno} placeholder="Ex: 2023" />
+        <FieldInput label="Nome / Código Cor" value={cor} onChange={setCor} placeholder="Ex: LB7W" />
+      </div>
+
+      <button
+        onClick={onOpenHelp}
+        className="flex w-full items-center gap-2 rounded-lg border border-dashed border-primary/50 bg-primary/5 px-3 py-2 text-left text-[11px] font-semibold text-primary hover:bg-primary/10"
+      >
+        <HelpCircle className="h-4 w-4 shrink-0" />
+        🔍 Não sabe o código da cor do seu carro?
+      </button>
+
+      <PhotoField photo={photo} onChange={setPhoto} />
+
+      <FieldGroup label="Quantidade (Frações de Lata 900ml)">
+        <div className="grid grid-cols-3 gap-1.5">
+          {FRACTIONS.map((f, i) => (
+            <Pill key={f.label} active={fracIdx === i} onClick={() => setFracIdx(i)}>
+              <span className="block text-[10px] leading-tight">{f.label}</span>
+              <span className="block text-[9px] opacity-70">{f.ml.toLocaleString("pt-BR")}ml</span>
+            </Pill>
+          ))}
+        </div>
+      </FieldGroup>
+
+      {err && <p className="text-[11px] text-destructive">Preencha marca, modelo, ano e cor.</p>}
+      <button
+        onClick={submit}
+        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground shadow-[var(--shadow-glow)] active:scale-[0.98]"
+      >
+        <Plus className="h-4 w-4" strokeWidth={3} />
+        Adicionar — {BRL(price)}
+      </button>
+    </div>
+  );
+}
+
+/* =========================================================
+   Helpers / micro-components
+========================================================= */
+function FieldGroup({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-primary">{label}</p>
+      {children}
+    </div>
+  );
+}
+
+function FieldInput({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <div>
+      <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-primary">{label}</label>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value.slice(0, 60))}
+        placeholder={placeholder}
+        className="w-full rounded-lg border border-border bg-background/40 px-2.5 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+      />
+    </div>
+  );
+}
+
+function Pill({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`rounded-lg border px-2 py-1.5 text-xs font-semibold transition-all ${
+        active
+          ? "border-primary bg-primary text-primary-foreground"
+          : "border-border bg-background/40 text-muted-foreground hover:border-primary/50"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function PhotoField({
+  photo,
+  onChange,
+}: {
+  photo: { name: string; dataUrl: string } | null;
+  onChange: (p: { name: string; dataUrl: string } | null) => void;
+}) {
+  const id = `photo-${Math.random().toString(36).slice(2, 9)}`;
+  return (
+    <div>
+      <label
+        htmlFor={id}
+        className="flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-background/40 px-3 py-2.5 text-xs font-semibold text-muted-foreground hover:border-primary/50 hover:text-foreground"
+      >
+        <Upload className="h-4 w-4 shrink-0 text-primary" />
+        <span className="min-w-0 flex-1 truncate">
+          {photo ? photo.name : "📸 Anexar foto da etiqueta de cor do carro (Opcional)"}
+        </span>
+      </label>
+      <input
+        id={id}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = () => onChange({ name: file.name, dataUrl: String(reader.result) });
+          reader.readAsDataURL(file);
+        }}
+      />
+      {photo && (
+        <div className="mt-2 flex items-center gap-2 rounded-lg border border-border bg-background/40 p-2">
+          <img src={photo.dataUrl} alt="Etiqueta" className="h-12 w-12 rounded object-cover ring-1 ring-border" />
+          <span className="flex-1 truncate text-xs text-muted-foreground">{photo.name}</span>
+          <button
+            onClick={() => onChange(null)}
+            className="rounded p-1 text-muted-foreground hover:text-foreground"
+            aria-label="Remover foto"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
       )}
     </div>
