@@ -360,67 +360,100 @@ function Index() {
           </div>
         </section>
 
-        {/* Product list */}
-        <section className="mt-4 overflow-hidden rounded-2xl border border-border bg-card divide-y divide-border/70">
-          {products.map((p) => {
-            const idx = selectedVariant[p.id] ?? 0;
-            const variant = p.variants[idx];
-            return (
-              <div key={p.id} className="px-3 py-3">
-                <div className="flex items-center gap-3">
-                  <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-background/60 ring-1 ring-border">
-                    <img
-                      src={p.image}
-                      alt={p.name}
-                      loading="lazy"
-                      className="h-full w-full object-cover"
-                    />
+        {/* Estética list */}
+        {category === "estetica" && (
+          <section className="mt-4 overflow-hidden rounded-2xl border border-border bg-card divide-y divide-border/70">
+            {ESTETICA_PRODUCTS.map((p) => {
+              const idx = selectedVariant[p.id] ?? 0;
+              const variant = p.variants[idx];
+              return (
+                <div key={p.id} className="px-3 py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-background/60 ring-1 ring-border">
+                      <img src={p.image} alt={p.name} loading="lazy" className="h-full w-full object-cover" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold leading-tight">{p.name}</p>
+                      <p className="mt-0.5 font-display text-sm font-bold text-primary">
+                        {BRL(variant.price)}
+                        <span className="ml-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                          {variant.label}
+                        </span>
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => addEsteticaToCart(p)}
+                      aria-label={`Adicionar ${p.name}`}
+                      className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-glow)] transition-transform active:scale-90"
+                    >
+                      <Plus className="h-5 w-5" strokeWidth={3} />
+                    </button>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold leading-tight">
-                      {p.name}
-                    </p>
-                    <p className="mt-0.5 font-display text-sm font-bold text-primary">
-                      {BRL(variant.price)}
-                      <span className="ml-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                        {variant.label}
-                      </span>
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => (p.custom ? setCustomSheetId(p.id) : addToCart(p))}
-                    aria-label={`Adicionar ${p.name}`}
-                    className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-glow)] transition-transform active:scale-90"
-                  >
-                    <Plus className="h-5 w-5" strokeWidth={3} />
-                  </button>
+                  {p.variants.length > 1 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5 pl-[68px]">
+                      {p.variants.map((v, i) => {
+                        const active = i === idx;
+                        return (
+                          <button
+                            key={v.label}
+                            onClick={() => setSelectedVariant((s) => ({ ...s, [p.id]: i }))}
+                            className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold transition-colors ${
+                              active
+                                ? "border-primary bg-primary/15 text-primary"
+                                : "border-border bg-background/40 text-muted-foreground hover:border-primary/40"
+                            }`}
+                          >
+                            {v.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-                {p.variants.length > 1 && (
-                  <div className="mt-2 flex flex-wrap gap-1.5 pl-[68px]">
-                    {p.variants.map((v, i) => {
-                      const active = i === idx;
-                      return (
-                        <button
-                          key={v.label}
-                          onClick={() =>
-                            setSelectedVariant((s) => ({ ...s, [p.id]: i }))
-                          }
-                          className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold transition-colors ${
-                            active
-                              ? "border-primary bg-primary/15 text-primary"
-                              : "border-border bg-background/40 text-muted-foreground hover:border-primary/40"
-                          }`}
-                        >
-                          {v.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </section>
+              );
+            })}
+          </section>
+        )}
+
+        {/* Tintas section */}
+        {category === "tintas" && (
+          <section className="mt-4 space-y-3">
+            {/* Subcategory tabs */}
+            <div className="grid grid-cols-3 gap-1.5 rounded-2xl border border-border bg-card p-1.5">
+              {[
+                { id: "tira-riscos" as const, label: "🚗 Retoques" },
+                { id: "prontas" as const, label: "🧑‍🎨 Prontas" },
+                { id: "pesadas" as const, label: "⚖️ Pesadas" },
+              ].map((tab) => {
+                const active = paintSub === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setPaintSub(tab.id)}
+                    className={`rounded-xl px-2 py-2 text-[11px] font-bold transition-all ${
+                      active
+                        ? "bg-primary text-primary-foreground shadow-[var(--shadow-glow)]"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {paintSub === "tira-riscos" && (
+              <TiraRiscosPanel
+                onAdd={pushCart}
+                onOpenHelp={() => setShowColorHelp(true)}
+              />
+            )}
+            {paintSub === "prontas" && <ProntasPanel onAdd={pushCart} />}
+            {paintSub === "pesadas" && (
+              <PesadasPanel onAdd={pushCart} onOpenHelp={() => setShowColorHelp(true)} />
+            )}
+          </section>
+        )}
 
         {/* Cart summary footer (sticky) */}
         {cartCount > 0 && (
