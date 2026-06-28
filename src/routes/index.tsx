@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   Sparkles,
   Gift,
@@ -20,10 +20,9 @@ import {
 import shampooImg from "@/assets/shampoo-citrus.jpg";
 import ceraImg from "@/assets/cera-carnauba.jpg";
 import pretinhoImg from "@/assets/pretinho.jpg";
-import tintaImg from "@/assets/tinta-spray.jpg";
 import canetaImg from "@/assets/caneta-retoque.jpg";
-import primerImg from "@/assets/primer.jpg";
 import personalizadaImg from "@/assets/tinta-personalizada.jpg";
+import tintaImg from "@/assets/tinta-spray.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -46,6 +45,7 @@ export const Route = createFileRoute("/")({
 });
 
 type Category = "estetica" | "tintas";
+type PaintSub = "tira-riscos" | "prontas" | "pesadas";
 
 type Variant = { label: string; price: number };
 type Product = {
@@ -53,18 +53,15 @@ type Product = {
   name: string;
   description: string;
   image: string;
-  category: Category;
   variants: Variant[];
-  custom?: boolean;
 };
 
-const PRODUCTS: Product[] = [
+const ESTETICA_PRODUCTS: Product[] = [
   {
     id: "shampoo-citrus",
     name: "Shampoo Automotivo Vonixx Citrus",
     description: "Lava-autos neutro com fragrância cítrica. Alto poder de limpeza.",
     image: shampooImg,
-    category: "estetica",
     variants: [
       { label: "500ml", price: 24.9 },
       { label: "1L", price: 39.9 },
@@ -76,7 +73,6 @@ const PRODUCTS: Product[] = [
     name: "Cera de Carnaúba Vonixx",
     description: "Proteção e brilho intenso para pinturas escuras e claras.",
     image: ceraImg,
-    category: "estetica",
     variants: [
       { label: "300g", price: 59.9 },
       { label: "500g", price: 89.9 },
@@ -87,126 +83,100 @@ const PRODUCTS: Product[] = [
     name: "Pretinho Premium para Pneus",
     description: "Renova o aspecto dos pneus com brilho duradouro e antiozônio.",
     image: pretinhoImg,
-    category: "estetica",
     variants: [
       { label: "500ml", price: 29.9 },
       { label: "1L", price: 49.9 },
     ],
   },
-  {
-    id: "tinta-spray",
-    name: "Tinta Spray Automotiva",
-    description: "Acabamento profissional para retoques e pintura geral.",
-    image: tintaImg,
-    category: "tintas",
-    variants: [
-      { label: "150ml", price: 19.9 },
-      { label: "400ml", price: 34.9 },
-    ],
-  },
-  {
-    id: "caneta-retoque",
-    name: "Caneta de Retoque Automotivo",
-    description: "Disfarça pequenos riscos. Cor sob consulta pela placa.",
-    image: canetaImg,
-    category: "tintas",
-    variants: [
-      { label: "12ml", price: 39.9 },
-      { label: "30ml", price: 69.9 },
-    ],
-  },
-  {
-    id: "primer",
-    name: "Primer Automotivo Cinza",
-    description: "Preparador de superfície de alta aderência para repintura.",
-    image: primerImg,
-    category: "tintas",
-    variants: [
-      { label: "500ml", price: 44.9 },
-      { label: "900ml", price: 74.9 },
-    ],
-  },
-  {
-    id: "tinta-personalizada",
-    name: "Tinta Automotiva Personalizada",
-    description:
-      "Base Poliéster ou PU formulada na cor do seu carro. Informe o código ou anexe a etiqueta.",
-    image: personalizadaImg,
-    category: "tintas",
-    custom: true,
-    variants: [
-      { label: "Lata 900ml", price: 189.9 },
-      { label: "Tira-riscos 100ml", price: 49.9 },
-    ],
-  },
 ];
+
+// Subcategoria: Tira-Riscos / Pequenos Retoques
+const KIT_TIRA_RISCOS_PRICE = 49.9;
+
+// Subcategoria: Tintas Prontas de Fábrica
+type ProntaTipo = "Poliéster" | "PU" | "Sintético" | "Duco/LACA";
+const PRONTAS_TIPOS: { tipo: ProntaTipo; tamanho: string; ml: number; price: number }[] = [
+  { tipo: "Poliéster", tamanho: "1/4 (900ml)", ml: 900, price: 89.9 },
+  { tipo: "PU", tamanho: "1/4 (675ml)", ml: 675, price: 149.9 },
+  { tipo: "Sintético", tamanho: "1/4 (900ml)", ml: 900, price: 69.9 },
+  { tipo: "Duco/LACA", tamanho: "1/4 (900ml)", ml: 900, price: 79.9 },
+];
+const ENDURECEDOR_PRICE = 39.9;
+const PRONTAS_MARCAS = ["Brazilian", "Lazzuril"] as const;
+
+// Subcategoria: Tintas Pesadas
+const PESADAS_MARCAS = ["Brazilian", "Wanda"] as const;
+const FRACTIONS: { label: string; ml: number }[] = [
+  { label: "1/8", ml: 112.5 },
+  { label: "1/6", ml: 150 },
+  { label: "1/5", ml: 180 },
+  { label: "1/4", ml: 225 },
+  { label: "1/3", ml: 300 },
+  { label: "1/2", ml: 450 },
+  { label: "1 Quarto", ml: 900 },
+  { label: "1 Quarto e Meio", ml: 1350 },
+  { label: "2 Quartos", ml: 1800 },
+  { label: "2 Quartos e Meio", ml: 2250 },
+  { label: "3 Quartos", ml: 2700 },
+  { label: "4 Quartos (Galão)", ml: 3600 },
+  { label: "5 Quartos", ml: 4500 },
+  { label: "6 Quartos", ml: 5400 },
+  { label: "7 Quartos", ml: 6300 },
+  { label: "8 Quartos", ml: 7200 },
+];
+const PESADAS_PRICE_PER_ML = 0.22; // R$/ml — laboratório
 
 const BRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
+type CartItem = {
+  uid: number;
+  name: string;
+  variant?: string;
+  price: number;
+  meta?: { label: string; value: string }[];
+  photo?: { name: string; dataUrl: string } | null;
+};
+
+let __uid = 0;
+const nextUid = () => ++__uid;
+
 function Index() {
   const [category, setCategory] = useState<Category>("estetica");
+  const [paintSub, setPaintSub] = useState<PaintSub>("tira-riscos");
   const [selectedVariant, setSelectedVariant] = useState<Record<string, number>>({});
   const [cartTotal, setCartTotal] = useState(0);
   const [cartCount, setCartCount] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
-  const [paintType, setPaintType] = useState<"Poliéster" | "PU">("Poliéster");
-  const [colorCode, setColorCode] = useState("");
-  const [colorPhoto, setColorPhoto] = useState<{ name: string; dataUrl: string } | null>(null);
   const [showColorHelp, setShowColorHelp] = useState(false);
   const [showCart, setShowCart] = useState(false);
-  const [customSheetId, setCustomSheetId] = useState<string | null>(null);
   const [customerName, setCustomerName] = useState("");
   const [delivery, setDelivery] = useState<"retirar" | "estafeta" | "">("");
   const [nameError, setNameError] = useState(false);
   const [deliveryError, setDeliveryError] = useState(false);
   const WHATSAPP_NUMBER = "5511999999999"; // número da loja (formato internacional, só dígitos)
-  const [cartItems, setCartItems] = useState<
-    Array<{
-      id: string;
-      name: string;
-      variant: string;
-      price: number;
-      custom?: { paintType: string; colorCode: string; photo: { name: string; dataUrl: string } | null };
-    }>
-  >([]);
-
-  const products = useMemo(
-    () => PRODUCTS.filter((p) => p.category === category),
-    [category],
-  );
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   const stamps = Math.min(10, Math.floor(cartTotal / 50));
 
-  const addToCart = (p: Product) => {
-    const idx = selectedVariant[p.id] ?? 0;
-    const v = p.variants[idx];
-    const customData = p.custom
-      ? {
-          paintType,
-          colorCode: colorCode.trim(),
-          photo: colorPhoto,
-        }
-      : undefined;
-    setCartItems((items) => [
-      ...items,
-      { id: p.id, name: p.name, variant: v.label, price: v.price, custom: customData },
-    ]);
-    setCartTotal((t) => t + v.price);
-    setCartCount((c) => c + 1);
-    setToast(`${p.name} (${v.label}) adicionado!`);
-    window.clearTimeout((addToCart as any)._t);
-    (addToCart as any)._t = window.setTimeout(() => setToast(null), 2200);
+  const showToast = (msg: string) => {
+    setToast(msg);
+    window.clearTimeout((showToast as any)._t);
+    (showToast as any)._t = window.setTimeout(() => setToast(null), 2200);
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      setColorPhoto({ name: file.name, dataUrl: String(reader.result) });
-    };
-    reader.readAsDataURL(file);
+  const pushCart = (item: Omit<CartItem, "uid">) => {
+    const ci: CartItem = { ...item, uid: nextUid() };
+    setCartItems((items) => [...items, ci]);
+    setCartTotal((t) => t + ci.price);
+    setCartCount((c) => c + 1);
+    showToast(`${ci.name} adicionado!`);
+  };
+
+  const addEsteticaToCart = (p: Product) => {
+    const idx = selectedVariant[p.id] ?? 0;
+    const v = p.variants[idx];
+    pushCart({ name: p.name, variant: v.label, price: v.price });
   };
 
   const removeCartItem = (index: number) => {
@@ -240,17 +210,15 @@ function Index() {
     lines.push("");
     lines.push("📦 *Itens do pedido:*");
     cartItems.forEach((it, i) => {
-      lines.push(`${i + 1}. ${it.name} — ${it.variant} — ${BRL(it.price)}`);
-      if (it.custom) {
-        lines.push(`   🎨 Tipo: ${it.custom.paintType}`);
-        if (it.custom.colorCode) {
-          lines.push(`   🔢 Código da cor: ${it.custom.colorCode}`);
-        }
-        if (it.custom.photo) {
-          lines.push(
-            `   📎 Foto da etiqueta anexada: ${it.custom.photo.name} (enviarei a imagem em seguida nesta conversa)`,
-          );
-        }
+      const variant = it.variant ? ` — ${it.variant}` : "";
+      lines.push(`${i + 1}. ${it.name}${variant} — ${BRL(it.price)}`);
+      if (it.meta) {
+        it.meta.forEach((m) => lines.push(`   • ${m.label}: ${m.value}`));
+      }
+      if (it.photo) {
+        lines.push(
+          `   📎 Foto da etiqueta anexada: ${it.photo.name} (enviarei a imagem em seguida nesta conversa)`,
+        );
       }
     });
     lines.push("");
@@ -269,7 +237,7 @@ function Index() {
 
     // Se houver fotos anexadas, dispara download para o cliente reenviar no WhatsApp
     cartItems.forEach((it) => {
-      if (it.custom?.photo) downloadPhoto(it.custom.photo.dataUrl, it.custom.photo.name);
+      if (it.photo) downloadPhoto(it.photo.dataUrl, it.photo.name);
     });
 
     const text = encodeURIComponent(buildWhatsAppMessage());
@@ -392,67 +360,100 @@ function Index() {
           </div>
         </section>
 
-        {/* Product list */}
-        <section className="mt-4 overflow-hidden rounded-2xl border border-border bg-card divide-y divide-border/70">
-          {products.map((p) => {
-            const idx = selectedVariant[p.id] ?? 0;
-            const variant = p.variants[idx];
-            return (
-              <div key={p.id} className="px-3 py-3">
-                <div className="flex items-center gap-3">
-                  <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-background/60 ring-1 ring-border">
-                    <img
-                      src={p.image}
-                      alt={p.name}
-                      loading="lazy"
-                      className="h-full w-full object-cover"
-                    />
+        {/* Estética list */}
+        {category === "estetica" && (
+          <section className="mt-4 overflow-hidden rounded-2xl border border-border bg-card divide-y divide-border/70">
+            {ESTETICA_PRODUCTS.map((p) => {
+              const idx = selectedVariant[p.id] ?? 0;
+              const variant = p.variants[idx];
+              return (
+                <div key={p.id} className="px-3 py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-background/60 ring-1 ring-border">
+                      <img src={p.image} alt={p.name} loading="lazy" className="h-full w-full object-cover" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold leading-tight">{p.name}</p>
+                      <p className="mt-0.5 font-display text-sm font-bold text-primary">
+                        {BRL(variant.price)}
+                        <span className="ml-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                          {variant.label}
+                        </span>
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => addEsteticaToCart(p)}
+                      aria-label={`Adicionar ${p.name}`}
+                      className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-glow)] transition-transform active:scale-90"
+                    >
+                      <Plus className="h-5 w-5" strokeWidth={3} />
+                    </button>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold leading-tight">
-                      {p.name}
-                    </p>
-                    <p className="mt-0.5 font-display text-sm font-bold text-primary">
-                      {BRL(variant.price)}
-                      <span className="ml-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                        {variant.label}
-                      </span>
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => (p.custom ? setCustomSheetId(p.id) : addToCart(p))}
-                    aria-label={`Adicionar ${p.name}`}
-                    className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-glow)] transition-transform active:scale-90"
-                  >
-                    <Plus className="h-5 w-5" strokeWidth={3} />
-                  </button>
+                  {p.variants.length > 1 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5 pl-[68px]">
+                      {p.variants.map((v, i) => {
+                        const active = i === idx;
+                        return (
+                          <button
+                            key={v.label}
+                            onClick={() => setSelectedVariant((s) => ({ ...s, [p.id]: i }))}
+                            className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold transition-colors ${
+                              active
+                                ? "border-primary bg-primary/15 text-primary"
+                                : "border-border bg-background/40 text-muted-foreground hover:border-primary/40"
+                            }`}
+                          >
+                            {v.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-                {p.variants.length > 1 && (
-                  <div className="mt-2 flex flex-wrap gap-1.5 pl-[68px]">
-                    {p.variants.map((v, i) => {
-                      const active = i === idx;
-                      return (
-                        <button
-                          key={v.label}
-                          onClick={() =>
-                            setSelectedVariant((s) => ({ ...s, [p.id]: i }))
-                          }
-                          className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold transition-colors ${
-                            active
-                              ? "border-primary bg-primary/15 text-primary"
-                              : "border-border bg-background/40 text-muted-foreground hover:border-primary/40"
-                          }`}
-                        >
-                          {v.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </section>
+              );
+            })}
+          </section>
+        )}
+
+        {/* Tintas section */}
+        {category === "tintas" && (
+          <section className="mt-4 space-y-3">
+            {/* Subcategory tabs */}
+            <div className="grid grid-cols-3 gap-1.5 rounded-2xl border border-border bg-card p-1.5">
+              {[
+                { id: "tira-riscos" as const, label: "🚗 Retoques" },
+                { id: "prontas" as const, label: "🧑‍🎨 Prontas" },
+                { id: "pesadas" as const, label: "⚖️ Pesadas" },
+              ].map((tab) => {
+                const active = paintSub === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setPaintSub(tab.id)}
+                    className={`rounded-xl px-2 py-2 text-[11px] font-bold transition-all ${
+                      active
+                        ? "bg-primary text-primary-foreground shadow-[var(--shadow-glow)]"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {paintSub === "tira-riscos" && (
+              <TiraRiscosPanel
+                onAdd={pushCart}
+                onOpenHelp={() => setShowColorHelp(true)}
+              />
+            )}
+            {paintSub === "prontas" && <ProntasPanel onAdd={pushCart} />}
+            {paintSub === "pesadas" && (
+              <PesadasPanel onAdd={pushCart} onOpenHelp={() => setShowColorHelp(true)} />
+            )}
+          </section>
+        )}
 
         {/* Cart summary footer (sticky) */}
         {cartCount > 0 && (
@@ -548,27 +549,23 @@ function Index() {
                         </button>
                       </div>
                     </div>
-                    {it.custom && (
+                    {(it.meta?.length || it.photo) && (
                       <div className="mt-2 space-y-1 rounded-lg border border-primary/30 bg-primary/5 p-2 text-[11px]">
-                        <p>
-                          <span className="text-muted-foreground">Tipo:</span>{" "}
-                          <span className="font-semibold">{it.custom.paintType}</span>
-                        </p>
-                        {it.custom.colorCode && (
-                          <p>
-                            <span className="text-muted-foreground">Código:</span>{" "}
-                            <span className="font-semibold">{it.custom.colorCode}</span>
+                        {it.meta?.map((m) => (
+                          <p key={m.label}>
+                            <span className="text-muted-foreground">{m.label}:</span>{" "}
+                            <span className="font-semibold">{m.value}</span>
                           </p>
-                        )}
-                        {it.custom.photo && (
+                        ))}
+                        {it.photo && (
                           <div className="flex items-center gap-2 pt-1">
                             <img
-                              src={it.custom.photo.dataUrl}
+                              src={it.photo.dataUrl}
                               alt="Etiqueta"
                               className="h-10 w-10 rounded object-cover ring-1 ring-border"
                             />
                             <span className="flex-1 truncate text-muted-foreground">
-                              {it.custom.photo.name}
+                              {it.photo.name}
                             </span>
                           </div>
                         )}
@@ -637,7 +634,7 @@ function Index() {
                 )}
               </div>
 
-              {cartItems.some((it) => it.custom?.photo) && (
+              {cartItems.some((it) => it.photo) && (
                 <div className="flex items-start gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3 text-[11px] text-foreground">
                   <Download className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                   <p>
@@ -669,161 +666,6 @@ function Index() {
           </div>
         </div>
       )}
-
-      {/* Color help modal */}
-      {customSheetId && (() => {
-        const p = PRODUCTS.find((x) => x.id === customSheetId);
-        if (!p) return null;
-        const idx = selectedVariant[p.id] ?? 0;
-        const variant = p.variants[idx];
-        return (
-          <div
-            className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center sm:p-4"
-            onClick={() => setCustomSheetId(null)}
-          >
-            <div
-              className="flex max-h-[92vh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border border-primary/40 bg-card shadow-[var(--shadow-glow)] sm:rounded-3xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div
-                className="flex items-center justify-between px-5 py-4"
-                style={{ background: "var(--gradient-promo)" }}
-              >
-                <div className="flex min-w-0 items-center gap-2 text-white">
-                  <Palette className="h-5 w-5 shrink-0" />
-                  <p className="truncate font-display text-base font-bold">{p.name}</p>
-                </div>
-                <button
-                  onClick={() => setCustomSheetId(null)}
-                  className="rounded-full p-1 text-white/90 hover:bg-white/15"
-                  aria-label="Fechar"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-              <div className="flex-1 space-y-3 overflow-y-auto p-5">
-                <div>
-                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-primary">
-                    Tipo de Tinta
-                  </p>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {(["Poliéster", "PU"] as const).map((t) => {
-                      const active = paintType === t;
-                      return (
-                        <button
-                          key={t}
-                          onClick={() => setPaintType(t)}
-                          className={`rounded-lg border px-2.5 py-2 text-xs font-semibold transition-all ${
-                            active
-                              ? "border-primary bg-primary text-primary-foreground"
-                              : "border-border bg-card text-muted-foreground hover:border-primary/50"
-                          }`}
-                        >
-                          {t}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-                <div>
-                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-primary">
-                    Tamanho da Lata
-                  </p>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {p.variants.map((v, i) => {
-                      const active = i === idx;
-                      return (
-                        <button
-                          key={v.label}
-                          onClick={() => setSelectedVariant((s) => ({ ...s, [p.id]: i }))}
-                          className={`rounded-lg border px-2.5 py-2 text-xs font-semibold transition-all ${
-                            active
-                              ? "border-primary bg-primary text-primary-foreground"
-                              : "border-border bg-card text-muted-foreground hover:border-primary/50"
-                          }`}
-                        >
-                          {v.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-primary">
-                    Código da Cor (Opcional)
-                  </label>
-                  <input
-                    type="text"
-                    value={colorCode}
-                    onChange={(e) => setColorCode(e.target.value.slice(0, 40))}
-                    placeholder="Ex: 297 / PRD"
-                    className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowColorHelp(true)}
-                  className="flex w-full items-center gap-2 rounded-lg border border-dashed border-primary/50 bg-primary/5 px-3 py-2.5 text-left text-xs font-semibold text-primary transition-colors hover:bg-primary/10"
-                >
-                  <HelpCircle className="h-4 w-4 shrink-0" />
-                  🔍 Não sabe o código da cor do seu carro?
-                </button>
-                <div>
-                  <label
-                    htmlFor={`photo-${p.id}`}
-                    className="flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-card px-3 py-2.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
-                  >
-                    <Upload className="h-4 w-4 shrink-0 text-primary" />
-                    <span className="min-w-0 flex-1 truncate">
-                      {colorPhoto
-                        ? colorPhoto.name
-                        : "Anexar foto da etiqueta de cor do carro (Opcional)"}
-                    </span>
-                  </label>
-                  <input
-                    id={`photo-${p.id}`}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handlePhotoUpload}
-                  />
-                  {colorPhoto && (
-                    <div className="mt-2 flex items-center gap-2 rounded-lg border border-border bg-background/60 p-2">
-                      <img
-                        src={colorPhoto.dataUrl}
-                        alt="Etiqueta de cor"
-                        className="h-12 w-12 rounded object-cover ring-1 ring-border"
-                      />
-                      <span className="flex-1 truncate text-xs text-muted-foreground">
-                        {colorPhoto.name}
-                      </span>
-                      <button
-                        onClick={() => setColorPhoto(null)}
-                        className="rounded p-1 text-muted-foreground hover:text-foreground"
-                        aria-label="Remover foto"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="border-t border-border bg-background/60 p-4">
-                <button
-                  onClick={() => {
-                    addToCart(p);
-                    setCustomSheetId(null);
-                  }}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
-                >
-                  <Plus className="h-4 w-4" strokeWidth={3} />
-                  Adicionar — {BRL(variant.price)}
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-      })()}
 
       {/* Color help modal */}
       {showColorHelp && (
@@ -888,6 +730,394 @@ function Index() {
               </p>
             </div>
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* =========================================================
+   Panel: Tira-Riscos / Pequenos Retoques
+========================================================= */
+function TiraRiscosPanel({
+  onAdd,
+  onOpenHelp,
+}: {
+  onAdd: (item: Omit<CartItem, "uid">) => void;
+  onOpenHelp: () => void;
+}) {
+  const [marca, setMarca] = useState("");
+  const [modelo, setModelo] = useState("");
+  const [ano, setAno] = useState("");
+  const [cor, setCor] = useState("");
+  const [photo, setPhoto] = useState<{ name: string; dataUrl: string } | null>(null);
+  const [err, setErr] = useState(false);
+
+  const submit = () => {
+    if (!marca.trim() || !modelo.trim() || !ano.trim() || !cor.trim()) {
+      setErr(true);
+      return;
+    }
+    onAdd({
+      name: "Kit Tira-Riscos (100ml)",
+      variant: "100ml",
+      price: KIT_TIRA_RISCOS_PRICE,
+      meta: [
+        { label: "Marca", value: marca.trim() },
+        { label: "Modelo", value: modelo.trim() },
+        { label: "Ano", value: ano.trim() },
+        { label: "Cor", value: cor.trim() },
+      ],
+      photo,
+    });
+    setMarca(""); setModelo(""); setAno(""); setCor(""); setPhoto(null); setErr(false);
+  };
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4 space-y-3">
+      <div className="flex items-center gap-3">
+        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg ring-1 ring-border">
+          <img src={canetaImg} alt="Kit Tira-Riscos" className="h-full w-full object-cover" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold leading-tight">Kit Tira-Riscos (100ml)</p>
+          <p className="font-display text-sm font-bold text-primary">{BRL(KIT_TIRA_RISCOS_PRICE)}</p>
+        </div>
+      </div>
+      <p className="text-[11px] text-muted-foreground">
+        Preencha os dados do seu veículo para formularmos a cor exata.
+      </p>
+      <div className="grid grid-cols-2 gap-2">
+        <FieldInput label="Marca" value={marca} onChange={setMarca} placeholder="Ex: Fiat" />
+        <FieldInput label="Modelo" value={modelo} onChange={setModelo} placeholder="Ex: Argo" />
+        <FieldInput label="Ano" value={ano} onChange={setAno} placeholder="Ex: 2022" />
+        <FieldInput label="Nome / Código da Cor" value={cor} onChange={setCor} placeholder="Ex: Branco 297" />
+      </div>
+      <button
+        onClick={onOpenHelp}
+        className="flex w-full items-center gap-2 rounded-lg border border-dashed border-primary/50 bg-primary/5 px-3 py-2 text-left text-[11px] font-semibold text-primary hover:bg-primary/10"
+      >
+        <HelpCircle className="h-4 w-4 shrink-0" />
+        🔍 Não sabe o código da cor do seu carro?
+      </button>
+      <PhotoField photo={photo} onChange={setPhoto} />
+      {err && <p className="text-[11px] text-destructive">Preencha marca, modelo, ano e cor.</p>}
+      <button
+        onClick={submit}
+        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground shadow-[var(--shadow-glow)] active:scale-[0.98]"
+      >
+        <Plus className="h-4 w-4" strokeWidth={3} /> Adicionar ao Carrinho
+      </button>
+    </div>
+  );
+}
+
+/* =========================================================
+   Panel: Tintas Prontas de Fábrica
+========================================================= */
+function ProntasPanel({ onAdd }: { onAdd: (item: Omit<CartItem, "uid">) => void }) {
+  const [marca, setMarca] = useState<(typeof PRONTAS_MARCAS)[number]>("Brazilian");
+  const [tipoIdx, setTipoIdx] = useState(0);
+  const [corNome, setCorNome] = useState("");
+  const [endurecedor, setEndurecedor] = useState(false);
+  const [err, setErr] = useState(false);
+  const tipo = PRONTAS_TIPOS[tipoIdx];
+
+  const submit = () => {
+    if (!corNome.trim()) {
+      setErr(true);
+      return;
+    }
+    const isPU = tipo.tipo === "PU";
+    const total = tipo.price + (isPU && endurecedor ? ENDURECEDOR_PRICE : 0);
+    const meta = [
+      { label: "Marca", value: marca },
+      { label: "Cor (Pronta de Fábrica)", value: corNome.trim() },
+      { label: "Tipo", value: tipo.tipo },
+      { label: "Tamanho", value: tipo.tamanho },
+    ];
+    if (isPU && endurecedor) {
+      meta.push({ label: "Endurecedor (225ml)", value: `Incluso (+${BRL(ENDURECEDOR_PRICE)})` });
+    }
+    onAdd({
+      name: `Tinta Pronta ${marca} — ${tipo.tipo}`,
+      variant: tipo.tamanho,
+      price: total,
+      meta,
+    });
+    setCorNome(""); setEndurecedor(false); setErr(false);
+  };
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4 space-y-3">
+      <div className="flex items-center gap-3">
+        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg ring-1 ring-border">
+          <img src={personalizadaImg} alt="Tinta Pronta" className="h-full w-full object-cover" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold leading-tight">Tintas Prontas de Fábrica</p>
+          <p className="text-[11px] text-muted-foreground">Embalagens fechadas, cores de catálogo.</p>
+        </div>
+      </div>
+
+      <FieldGroup label="Marca">
+        <div className="grid grid-cols-2 gap-1.5">
+          {PRONTAS_MARCAS.map((m) => (
+            <Pill key={m} active={marca === m} onClick={() => setMarca(m)}>{m}</Pill>
+          ))}
+        </div>
+      </FieldGroup>
+
+      <FieldInput
+        label="Cor Pronta de Fábrica"
+        value={corNome}
+        onChange={setCorNome}
+        placeholder="Ex: Branco Cristal, Preto Ônix..."
+      />
+
+      <FieldGroup label="Tipo de Tinta">
+        <div className="grid grid-cols-2 gap-1.5">
+          {PRONTAS_TIPOS.map((t, i) => (
+            <Pill key={t.tipo} active={tipoIdx === i} onClick={() => { setTipoIdx(i); setEndurecedor(false); }}>
+              {t.tipo}
+            </Pill>
+          ))}
+        </div>
+        <p className="mt-1.5 text-[11px] text-muted-foreground">
+          Tamanho: <span className="font-semibold text-foreground">{tipo.tamanho}</span> · {BRL(tipo.price)}
+        </p>
+      </FieldGroup>
+
+      {tipo.tipo === "PU" && (
+        <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 p-2.5 text-[12px]">
+          <input
+            type="checkbox"
+            checked={endurecedor}
+            onChange={(e) => setEndurecedor(e.target.checked)}
+            className="h-4 w-4 accent-primary"
+          />
+          <span>Acompanhar Endurecedor (225ml) <span className="text-muted-foreground">+ {BRL(ENDURECEDOR_PRICE)}</span></span>
+        </label>
+      )}
+
+      {err && <p className="text-[11px] text-destructive">Informe o nome da cor.</p>}
+      <button
+        onClick={submit}
+        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground shadow-[var(--shadow-glow)] active:scale-[0.98]"
+      >
+        <Plus className="h-4 w-4" strokeWidth={3} />
+        Adicionar — {BRL(tipo.price + (tipo.tipo === "PU" && endurecedor ? ENDURECEDOR_PRICE : 0))}
+      </button>
+    </div>
+  );
+}
+
+/* =========================================================
+   Panel: Tintas Pesadas na Hora (Laboratório)
+========================================================= */
+function PesadasPanel({
+  onAdd,
+  onOpenHelp,
+}: {
+  onAdd: (item: Omit<CartItem, "uid">) => void;
+  onOpenHelp: () => void;
+}) {
+  const [marca, setMarca] = useState<(typeof PESADAS_MARCAS)[number]>("Brazilian");
+  const [veicMarca, setVeicMarca] = useState("");
+  const [modelo, setModelo] = useState("");
+  const [ano, setAno] = useState("");
+  const [cor, setCor] = useState("");
+  const [fracIdx, setFracIdx] = useState(6); // 1 Quarto default
+  const [photo, setPhoto] = useState<{ name: string; dataUrl: string } | null>(null);
+  const [err, setErr] = useState(false);
+  const frac = FRACTIONS[fracIdx];
+  const price = Math.round(frac.ml * PESADAS_PRICE_PER_ML * 10) / 10;
+
+  const submit = () => {
+    if (!veicMarca.trim() || !modelo.trim() || !ano.trim() || !cor.trim()) {
+      setErr(true);
+      return;
+    }
+    onAdd({
+      name: `Tinta Pesada na Hora — ${marca}`,
+      variant: `${frac.label} (${frac.ml.toLocaleString("pt-BR")}ml)`,
+      price,
+      meta: [
+        { label: "Sistema de Pesagem", value: marca },
+        { label: "Marca Veículo", value: veicMarca.trim() },
+        { label: "Modelo", value: modelo.trim() },
+        { label: "Ano", value: ano.trim() },
+        { label: "Nome / Código da Cor", value: cor.trim() },
+        { label: "Fração", value: `${frac.label} (${frac.ml.toLocaleString("pt-BR")}ml)` },
+      ],
+      photo,
+    });
+    setVeicMarca(""); setModelo(""); setAno(""); setCor(""); setPhoto(null); setErr(false);
+  };
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4 space-y-3">
+      <div className="flex items-center gap-3">
+        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg ring-1 ring-border">
+          <img src={tintaImg} alt="Tinta Pesada" className="h-full w-full object-cover" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold leading-tight">Tinta Pesada na Hora</p>
+          <p className="text-[11px] text-muted-foreground">Fórmula e pesagem por laboratório.</p>
+        </div>
+      </div>
+
+      <FieldGroup label="Sistema de Pesagem">
+        <div className="grid grid-cols-2 gap-1.5">
+          {PESADAS_MARCAS.map((m) => (
+            <Pill key={m} active={marca === m} onClick={() => setMarca(m)}>{m}</Pill>
+          ))}
+        </div>
+      </FieldGroup>
+
+      <div className="grid grid-cols-2 gap-2">
+        <FieldInput label="Marca" value={veicMarca} onChange={setVeicMarca} placeholder="Ex: VW" />
+        <FieldInput label="Modelo" value={modelo} onChange={setModelo} placeholder="Ex: Polo" />
+        <FieldInput label="Ano" value={ano} onChange={setAno} placeholder="Ex: 2023" />
+        <FieldInput label="Nome / Código Cor" value={cor} onChange={setCor} placeholder="Ex: LB7W" />
+      </div>
+
+      <button
+        onClick={onOpenHelp}
+        className="flex w-full items-center gap-2 rounded-lg border border-dashed border-primary/50 bg-primary/5 px-3 py-2 text-left text-[11px] font-semibold text-primary hover:bg-primary/10"
+      >
+        <HelpCircle className="h-4 w-4 shrink-0" />
+        🔍 Não sabe o código da cor do seu carro?
+      </button>
+
+      <PhotoField photo={photo} onChange={setPhoto} />
+
+      <FieldGroup label="Quantidade (Frações de Lata 900ml)">
+        <div className="grid grid-cols-3 gap-1.5">
+          {FRACTIONS.map((f, i) => (
+            <Pill key={f.label} active={fracIdx === i} onClick={() => setFracIdx(i)}>
+              <span className="block text-[10px] leading-tight">{f.label}</span>
+              <span className="block text-[9px] opacity-70">{f.ml.toLocaleString("pt-BR")}ml</span>
+            </Pill>
+          ))}
+        </div>
+      </FieldGroup>
+
+      {err && <p className="text-[11px] text-destructive">Preencha marca, modelo, ano e cor.</p>}
+      <button
+        onClick={submit}
+        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground shadow-[var(--shadow-glow)] active:scale-[0.98]"
+      >
+        <Plus className="h-4 w-4" strokeWidth={3} />
+        Adicionar — {BRL(price)}
+      </button>
+    </div>
+  );
+}
+
+/* =========================================================
+   Helpers / micro-components
+========================================================= */
+function FieldGroup({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-primary">{label}</p>
+      {children}
+    </div>
+  );
+}
+
+function FieldInput({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <div>
+      <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-primary">{label}</label>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value.slice(0, 60))}
+        placeholder={placeholder}
+        className="w-full rounded-lg border border-border bg-background/40 px-2.5 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+      />
+    </div>
+  );
+}
+
+function Pill({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`rounded-lg border px-2 py-1.5 text-xs font-semibold transition-all ${
+        active
+          ? "border-primary bg-primary text-primary-foreground"
+          : "border-border bg-background/40 text-muted-foreground hover:border-primary/50"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function PhotoField({
+  photo,
+  onChange,
+}: {
+  photo: { name: string; dataUrl: string } | null;
+  onChange: (p: { name: string; dataUrl: string } | null) => void;
+}) {
+  const id = `photo-${Math.random().toString(36).slice(2, 9)}`;
+  return (
+    <div>
+      <label
+        htmlFor={id}
+        className="flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-background/40 px-3 py-2.5 text-xs font-semibold text-muted-foreground hover:border-primary/50 hover:text-foreground"
+      >
+        <Upload className="h-4 w-4 shrink-0 text-primary" />
+        <span className="min-w-0 flex-1 truncate">
+          {photo ? photo.name : "📸 Anexar foto da etiqueta de cor do carro (Opcional)"}
+        </span>
+      </label>
+      <input
+        id={id}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = () => onChange({ name: file.name, dataUrl: String(reader.result) });
+          reader.readAsDataURL(file);
+        }}
+      />
+      {photo && (
+        <div className="mt-2 flex items-center gap-2 rounded-lg border border-border bg-background/40 p-2">
+          <img src={photo.dataUrl} alt="Etiqueta" className="h-12 w-12 rounded object-cover ring-1 ring-border" />
+          <span className="flex-1 truncate text-xs text-muted-foreground">{photo.name}</span>
+          <button
+            onClick={() => onChange(null)}
+            className="rounded p-1 text-muted-foreground hover:text-foreground"
+            aria-label="Remover foto"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
       )}
     </div>
