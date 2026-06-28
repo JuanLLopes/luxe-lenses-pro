@@ -549,27 +549,23 @@ function Index() {
                         </button>
                       </div>
                     </div>
-                    {it.custom && (
+                    {(it.meta?.length || it.photo) && (
                       <div className="mt-2 space-y-1 rounded-lg border border-primary/30 bg-primary/5 p-2 text-[11px]">
-                        <p>
-                          <span className="text-muted-foreground">Tipo:</span>{" "}
-                          <span className="font-semibold">{it.custom.paintType}</span>
-                        </p>
-                        {it.custom.colorCode && (
-                          <p>
-                            <span className="text-muted-foreground">Código:</span>{" "}
-                            <span className="font-semibold">{it.custom.colorCode}</span>
+                        {it.meta?.map((m) => (
+                          <p key={m.label}>
+                            <span className="text-muted-foreground">{m.label}:</span>{" "}
+                            <span className="font-semibold">{m.value}</span>
                           </p>
-                        )}
-                        {it.custom.photo && (
+                        ))}
+                        {it.photo && (
                           <div className="flex items-center gap-2 pt-1">
                             <img
-                              src={it.custom.photo.dataUrl}
+                              src={it.photo.dataUrl}
                               alt="Etiqueta"
                               className="h-10 w-10 rounded object-cover ring-1 ring-border"
                             />
                             <span className="flex-1 truncate text-muted-foreground">
-                              {it.custom.photo.name}
+                              {it.photo.name}
                             </span>
                           </div>
                         )}
@@ -638,7 +634,7 @@ function Index() {
                 )}
               </div>
 
-              {cartItems.some((it) => it.custom?.photo) && (
+              {cartItems.some((it) => it.photo) && (
                 <div className="flex items-start gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3 text-[11px] text-foreground">
                   <Download className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                   <p>
