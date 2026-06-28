@@ -20,10 +20,9 @@ import {
 import shampooImg from "@/assets/shampoo-citrus.jpg";
 import ceraImg from "@/assets/cera-carnauba.jpg";
 import pretinhoImg from "@/assets/pretinho.jpg";
-import tintaImg from "@/assets/tinta-spray.jpg";
 import canetaImg from "@/assets/caneta-retoque.jpg";
-import primerImg from "@/assets/primer.jpg";
 import personalizadaImg from "@/assets/tinta-personalizada.jpg";
+import tintaImg from "@/assets/tinta-spray.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -46,6 +45,7 @@ export const Route = createFileRoute("/")({
 });
 
 type Category = "estetica" | "tintas";
+type PaintSub = "tira-riscos" | "prontas" | "pesadas";
 
 type Variant = { label: string; price: number };
 type Product = {
@@ -53,18 +53,15 @@ type Product = {
   name: string;
   description: string;
   image: string;
-  category: Category;
   variants: Variant[];
-  custom?: boolean;
 };
 
-const PRODUCTS: Product[] = [
+const ESTETICA_PRODUCTS: Product[] = [
   {
     id: "shampoo-citrus",
     name: "Shampoo Automotivo Vonixx Citrus",
     description: "Lava-autos neutro com fragrância cítrica. Alto poder de limpeza.",
     image: shampooImg,
-    category: "estetica",
     variants: [
       { label: "500ml", price: 24.9 },
       { label: "1L", price: 39.9 },
@@ -76,7 +73,6 @@ const PRODUCTS: Product[] = [
     name: "Cera de Carnaúba Vonixx",
     description: "Proteção e brilho intenso para pinturas escuras e claras.",
     image: ceraImg,
-    category: "estetica",
     variants: [
       { label: "300g", price: 59.9 },
       { label: "500g", price: 89.9 },
@@ -87,126 +83,100 @@ const PRODUCTS: Product[] = [
     name: "Pretinho Premium para Pneus",
     description: "Renova o aspecto dos pneus com brilho duradouro e antiozônio.",
     image: pretinhoImg,
-    category: "estetica",
     variants: [
       { label: "500ml", price: 29.9 },
       { label: "1L", price: 49.9 },
     ],
   },
-  {
-    id: "tinta-spray",
-    name: "Tinta Spray Automotiva",
-    description: "Acabamento profissional para retoques e pintura geral.",
-    image: tintaImg,
-    category: "tintas",
-    variants: [
-      { label: "150ml", price: 19.9 },
-      { label: "400ml", price: 34.9 },
-    ],
-  },
-  {
-    id: "caneta-retoque",
-    name: "Caneta de Retoque Automotivo",
-    description: "Disfarça pequenos riscos. Cor sob consulta pela placa.",
-    image: canetaImg,
-    category: "tintas",
-    variants: [
-      { label: "12ml", price: 39.9 },
-      { label: "30ml", price: 69.9 },
-    ],
-  },
-  {
-    id: "primer",
-    name: "Primer Automotivo Cinza",
-    description: "Preparador de superfície de alta aderência para repintura.",
-    image: primerImg,
-    category: "tintas",
-    variants: [
-      { label: "500ml", price: 44.9 },
-      { label: "900ml", price: 74.9 },
-    ],
-  },
-  {
-    id: "tinta-personalizada",
-    name: "Tinta Automotiva Personalizada",
-    description:
-      "Base Poliéster ou PU formulada na cor do seu carro. Informe o código ou anexe a etiqueta.",
-    image: personalizadaImg,
-    category: "tintas",
-    custom: true,
-    variants: [
-      { label: "Lata 900ml", price: 189.9 },
-      { label: "Tira-riscos 100ml", price: 49.9 },
-    ],
-  },
 ];
+
+// Subcategoria: Tira-Riscos / Pequenos Retoques
+const KIT_TIRA_RISCOS_PRICE = 49.9;
+
+// Subcategoria: Tintas Prontas de Fábrica
+type ProntaTipo = "Poliéster" | "PU" | "Sintético" | "Duco/LACA";
+const PRONTAS_TIPOS: { tipo: ProntaTipo; tamanho: string; ml: number; price: number }[] = [
+  { tipo: "Poliéster", tamanho: "1/4 (900ml)", ml: 900, price: 89.9 },
+  { tipo: "PU", tamanho: "1/4 (675ml)", ml: 675, price: 149.9 },
+  { tipo: "Sintético", tamanho: "1/4 (900ml)", ml: 900, price: 69.9 },
+  { tipo: "Duco/LACA", tamanho: "1/4 (900ml)", ml: 900, price: 79.9 },
+];
+const ENDURECEDOR_PRICE = 39.9;
+const PRONTAS_MARCAS = ["Brazilian", "Lazzuril"] as const;
+
+// Subcategoria: Tintas Pesadas
+const PESADAS_MARCAS = ["Brazilian", "Wanda"] as const;
+const FRACTIONS: { label: string; ml: number }[] = [
+  { label: "1/8", ml: 112.5 },
+  { label: "1/6", ml: 150 },
+  { label: "1/5", ml: 180 },
+  { label: "1/4", ml: 225 },
+  { label: "1/3", ml: 300 },
+  { label: "1/2", ml: 450 },
+  { label: "1 Quarto", ml: 900 },
+  { label: "1 Quarto e Meio", ml: 1350 },
+  { label: "2 Quartos", ml: 1800 },
+  { label: "2 Quartos e Meio", ml: 2250 },
+  { label: "3 Quartos", ml: 2700 },
+  { label: "4 Quartos (Galão)", ml: 3600 },
+  { label: "5 Quartos", ml: 4500 },
+  { label: "6 Quartos", ml: 5400 },
+  { label: "7 Quartos", ml: 6300 },
+  { label: "8 Quartos", ml: 7200 },
+];
+const PESADAS_PRICE_PER_ML = 0.22; // R$/ml — laboratório
 
 const BRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
+type CartItem = {
+  uid: number;
+  name: string;
+  variant?: string;
+  price: number;
+  meta?: { label: string; value: string }[];
+  photo?: { name: string; dataUrl: string } | null;
+};
+
+let __uid = 0;
+const nextUid = () => ++__uid;
+
 function Index() {
   const [category, setCategory] = useState<Category>("estetica");
+  const [paintSub, setPaintSub] = useState<PaintSub>("tira-riscos");
   const [selectedVariant, setSelectedVariant] = useState<Record<string, number>>({});
   const [cartTotal, setCartTotal] = useState(0);
   const [cartCount, setCartCount] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
-  const [paintType, setPaintType] = useState<"Poliéster" | "PU">("Poliéster");
-  const [colorCode, setColorCode] = useState("");
-  const [colorPhoto, setColorPhoto] = useState<{ name: string; dataUrl: string } | null>(null);
   const [showColorHelp, setShowColorHelp] = useState(false);
   const [showCart, setShowCart] = useState(false);
-  const [customSheetId, setCustomSheetId] = useState<string | null>(null);
   const [customerName, setCustomerName] = useState("");
   const [delivery, setDelivery] = useState<"retirar" | "estafeta" | "">("");
   const [nameError, setNameError] = useState(false);
   const [deliveryError, setDeliveryError] = useState(false);
   const WHATSAPP_NUMBER = "5511999999999"; // número da loja (formato internacional, só dígitos)
-  const [cartItems, setCartItems] = useState<
-    Array<{
-      id: string;
-      name: string;
-      variant: string;
-      price: number;
-      custom?: { paintType: string; colorCode: string; photo: { name: string; dataUrl: string } | null };
-    }>
-  >([]);
-
-  const products = useMemo(
-    () => PRODUCTS.filter((p) => p.category === category),
-    [category],
-  );
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   const stamps = Math.min(10, Math.floor(cartTotal / 50));
 
-  const addToCart = (p: Product) => {
-    const idx = selectedVariant[p.id] ?? 0;
-    const v = p.variants[idx];
-    const customData = p.custom
-      ? {
-          paintType,
-          colorCode: colorCode.trim(),
-          photo: colorPhoto,
-        }
-      : undefined;
-    setCartItems((items) => [
-      ...items,
-      { id: p.id, name: p.name, variant: v.label, price: v.price, custom: customData },
-    ]);
-    setCartTotal((t) => t + v.price);
-    setCartCount((c) => c + 1);
-    setToast(`${p.name} (${v.label}) adicionado!`);
-    window.clearTimeout((addToCart as any)._t);
-    (addToCart as any)._t = window.setTimeout(() => setToast(null), 2200);
+  const showToast = (msg: string) => {
+    setToast(msg);
+    window.clearTimeout((showToast as any)._t);
+    (showToast as any)._t = window.setTimeout(() => setToast(null), 2200);
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      setColorPhoto({ name: file.name, dataUrl: String(reader.result) });
-    };
-    reader.readAsDataURL(file);
+  const pushCart = (item: Omit<CartItem, "uid">) => {
+    const ci: CartItem = { ...item, uid: nextUid() };
+    setCartItems((items) => [...items, ci]);
+    setCartTotal((t) => t + ci.price);
+    setCartCount((c) => c + 1);
+    showToast(`${ci.name} adicionado!`);
+  };
+
+  const addEsteticaToCart = (p: Product) => {
+    const idx = selectedVariant[p.id] ?? 0;
+    const v = p.variants[idx];
+    pushCart({ name: p.name, variant: v.label, price: v.price });
   };
 
   const removeCartItem = (index: number) => {
@@ -240,17 +210,15 @@ function Index() {
     lines.push("");
     lines.push("📦 *Itens do pedido:*");
     cartItems.forEach((it, i) => {
-      lines.push(`${i + 1}. ${it.name} — ${it.variant} — ${BRL(it.price)}`);
-      if (it.custom) {
-        lines.push(`   🎨 Tipo: ${it.custom.paintType}`);
-        if (it.custom.colorCode) {
-          lines.push(`   🔢 Código da cor: ${it.custom.colorCode}`);
-        }
-        if (it.custom.photo) {
-          lines.push(
-            `   📎 Foto da etiqueta anexada: ${it.custom.photo.name} (enviarei a imagem em seguida nesta conversa)`,
-          );
-        }
+      const variant = it.variant ? ` — ${it.variant}` : "";
+      lines.push(`${i + 1}. ${it.name}${variant} — ${BRL(it.price)}`);
+      if (it.meta) {
+        it.meta.forEach((m) => lines.push(`   • ${m.label}: ${m.value}`));
+      }
+      if (it.photo) {
+        lines.push(
+          `   📎 Foto da etiqueta anexada: ${it.photo.name} (enviarei a imagem em seguida nesta conversa)`,
+        );
       }
     });
     lines.push("");
@@ -269,7 +237,7 @@ function Index() {
 
     // Se houver fotos anexadas, dispara download para o cliente reenviar no WhatsApp
     cartItems.forEach((it) => {
-      if (it.custom?.photo) downloadPhoto(it.custom.photo.dataUrl, it.custom.photo.name);
+      if (it.photo) downloadPhoto(it.photo.dataUrl, it.photo.name);
     });
 
     const text = encodeURIComponent(buildWhatsAppMessage());
