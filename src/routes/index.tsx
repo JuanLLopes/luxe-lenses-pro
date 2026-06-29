@@ -17,7 +17,7 @@ import {
   Send,
   Download,
 } from "lucide-react";
-import shampooImg from "@/assets/shampoo-citrus.jpg";
+
 import ceraImg from "@/assets/cera-carnauba.jpg";
 import pretinhoImg from "@/assets/pretinho.jpg";
 import canetaImg from "@/assets/caneta-retoque.jpg";
