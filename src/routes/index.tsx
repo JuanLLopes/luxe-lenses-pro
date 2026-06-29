@@ -59,14 +59,14 @@ type Product = {
 
 const ESTETICA_PRODUCTS: Product[] = [
   {
-    id: "shampoo-citrus",
-    name: "Shampoo Automotivo Vonixx Citrus",
-    description: "Lava-autos neutro com fragrância cítrica. Alto poder de limpeza.",
-    image: shampooImg,
+    id: "v-mol",
+    name: "Lava Auto Desincrustante V-Mol - VONIXX",
+    description: "Lava-autos desincrustante com fragrância cereja intensa. Alto poder de limpeza.",
+    image: "https://www.vonixx.com.br/wp-content/uploads/2023/07/v-mol-500ml-1.png",
     variants: [
-      { label: "500ml", price: 24.9 },
-      { label: "1L", price: 39.9 },
-      { label: "5L", price: 149.9 },
+      { label: "500ml", price: 25.0, image: "https://www.vonixx.com.br/wp-content/uploads/2023/07/v-mol-500ml-1.png" },
+      { label: "1,5L", price: 39.0, image: "https://images.tcdn.com.br/img/img_prod/1060217/v_mol_cereja_intenso_899_variacao_905_1_4cdb026dfd442115a5dfe5a814c3a4b0.png" },
+      { label: "5L", price: 96.0, image: "https://stgecomm.blob.core.windows.net/imagesprod2/0438086_v-mol-lava-auto-desincrustante-5l-vonixxvintex-2050117.jpeg" },
     ],
   },
   {
