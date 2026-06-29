@@ -370,7 +370,7 @@ function Index() {
               return (
                 <div key={p.id} className="px-3 py-3">
                   <div className="flex items-center gap-3">
-                    <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-background/60 ring-1 ring-border">
+                    <div className="h-40 w-40 shrink-0 overflow-hidden rounded-lg bg-background/60 ring-1 ring-border">
                       <img src={p.image} alt={p.name} loading="lazy" className="h-full w-full object-cover" />
                     </div>
                     <div className="min-w-0 flex-1">
