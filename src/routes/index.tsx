@@ -371,7 +371,7 @@ function Index() {
                 <div key={p.id} className="px-3 py-3">
                   <div className="flex items-center gap-3">
                     <div className="h-40 w-40 shrink-0 overflow-hidden rounded-lg bg-background/60 ring-1 ring-border">
-                      <img src={p.image} alt={p.name} loading="lazy" className="h-full w-full object-cover" />
+                      <img src={variant.image ?? p.image} alt={p.name} loading="lazy" className="h-full w-full object-cover" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold leading-tight">{p.name}</p>
