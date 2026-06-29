@@ -48,7 +48,7 @@ export const Route = createFileRoute("/")({
 type Category = "estetica" | "tintas";
 type PaintSub = "tira-riscos" | "prontas" | "pesadas";
 
-type Variant = { label: string; price: number };
+type Variant = { label: string; price: number; image?: string };
 type Product = {
   id: string;
   name: string;
