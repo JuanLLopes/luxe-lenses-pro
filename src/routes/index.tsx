@@ -17,7 +17,7 @@ import {
   Send,
   Download,
 } from "lucide-react";
-import shampooImg from "@/assets/shampoo-citrus.jpg";
+
 import ceraImg from "@/assets/cera-carnauba.jpg";
 import pretinhoImg from "@/assets/pretinho.jpg";
 import canetaImg from "@/assets/caneta-retoque.jpg";
@@ -48,7 +48,7 @@ export const Route = createFileRoute("/")({
 type Category = "estetica" | "tintas";
 type PaintSub = "tira-riscos" | "prontas" | "pesadas";
 
-type Variant = { label: string; price: number };
+type Variant = { label: string; price: number; image?: string };
 type Product = {
   id: string;
   name: string;
@@ -59,14 +59,14 @@ type Product = {
 
 const ESTETICA_PRODUCTS: Product[] = [
   {
-    id: "shampoo-citrus",
-    name: "Shampoo Automotivo Vonixx Citrus",
-    description: "Lava-autos neutro com fragrância cítrica. Alto poder de limpeza.",
-    image: shampooImg,
+    id: "v-mol",
+    name: "Lava Auto Desincrustante V-Mol - VONIXX",
+    description: "Lava-autos desincrustante com fragrância cereja intensa. Alto poder de limpeza.",
+    image: "https://www.vonixx.com.br/wp-content/uploads/2023/07/v-mol-500ml-1.png",
     variants: [
-      { label: "500ml", price: 24.9 },
-      { label: "1L", price: 39.9 },
-      { label: "5L", price: 149.9 },
+      { label: "500ml", price: 25.0, image: "https://www.vonixx.com.br/wp-content/uploads/2023/07/v-mol-500ml-1.png" },
+      { label: "1,5L", price: 39.0, image: "https://images.tcdn.com.br/img/img_prod/1060217/v_mol_cereja_intenso_899_variacao_905_1_4cdb026dfd442115a5dfe5a814c3a4b0.png" },
+      { label: "5L", price: 96.0, image: "https://stgecomm.blob.core.windows.net/imagesprod2/0438086_v-mol-lava-auto-desincrustante-5l-vonixxvintex-2050117.jpeg" },
     ],
   },
   {
@@ -371,7 +371,7 @@ function Index() {
                 <div key={p.id} className="px-3 py-3">
                   <div className="flex items-center gap-3">
                     <div className="h-40 w-40 shrink-0 overflow-hidden rounded-lg bg-background/60 ring-1 ring-border">
-                      <img src={p.image} alt={p.name} loading="lazy" className="h-full w-full object-cover" />
+                      <img src={variant.image ?? p.image} alt={p.name} loading="lazy" className="h-full w-full object-cover" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold leading-tight">{p.name}</p>
