@@ -777,7 +777,7 @@ function TiraRiscosPanel({
   return (
     <div className="rounded-2xl border border-border bg-card p-4 space-y-3">
       <div className="flex items-center gap-3">
-        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg ring-1 ring-border">
+        <div className="h-40 w-40 shrink-0 overflow-hidden rounded-lg ring-1 ring-border">
           <img src={canetaImg} alt="Kit Tira-Riscos" className="h-full w-full object-cover" />
         </div>
         <div className="min-w-0 flex-1">
