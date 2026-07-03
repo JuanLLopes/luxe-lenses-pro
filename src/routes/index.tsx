@@ -28,13 +28,13 @@ import { PRONTAS_COLORS, MONTADORAS, type ProntaCor } from "@/data/prontas-color
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Catálogo Inteligente | Tintas & Estética Automotiva" },
+      { title: "DNS TINTAS — Catálogo Inteligente" },
       {
         name: "description",
         content:
           "Catálogo de tintas e produtos de estética automotiva. Concorra ao Kit Vonixx no sorteio mensal e acumule selos no Cartão Fidelidade.",
       },
-      { property: "og:title", content: "Catálogo Inteligente | Tintas & Estética Automotiva" },
+      { property: "og:title", content: "DNS TINTAS — Catálogo Inteligente" },
       {
         property: "og:description",
         content:
@@ -202,7 +202,7 @@ function Index() {
 
   const buildWhatsAppMessage = () => {
     const lines: string[] = [];
-    lines.push("🛒 *NOVO PEDIDO — Catálogo Inteligente*");
+    lines.push("🛒 *NOVO PEDIDO — DNS TINTAS*");
     lines.push("");
     lines.push(`👤 *Cliente:* ${customerName.trim()}`);
     lines.push(
@@ -251,16 +251,18 @@ function Index() {
       {/* Top bar */}
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
-          <div className="flex min-w-0 items-center gap-2">
-            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground shadow-[var(--shadow-glow)]">
-              <Sparkles className="h-5 w-5" />
-            </div>
+          <div className="flex min-w-0 items-center gap-3">
+            <img
+              src="https://i.imgur.com/7fqPrrG.png"
+              alt="Logo DNS TINTAS"
+              className="h-10 w-10 shrink-0 rounded-lg object-cover"
+            />
             <div className="min-w-0 leading-tight">
               <p className="truncate font-display text-sm font-bold tracking-tight">
-                Catálogo Inteligente
+                DNS TINTAS
               </p>
               <p className="truncate text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                Tintas & Estética
+                Catálogo Inteligente
               </p>
             </div>
           </div>
