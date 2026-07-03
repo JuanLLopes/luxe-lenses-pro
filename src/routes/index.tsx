@@ -310,7 +310,7 @@ function Index() {
               <div className="min-w-0">
                 <p className="font-display text-sm font-bold">Cartão Fidelidade</p>
                 <p className="text-xs text-muted-foreground">
-                  R$ 50 = 1 selo · 10 selos = brinde premium
+                  R$ 100 = 1 selo · 10 selos = brinde premium
                 </p>
               </div>
             </div>
