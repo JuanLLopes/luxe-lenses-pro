@@ -23,6 +23,7 @@ import pretinhoImg from "@/assets/pretinho.jpg";
 import canetaImg from "@/assets/caneta-retoque.jpg";
 import personalizadaImg from "@/assets/tinta-personalizada.jpg";
 import tintaImg from "@/assets/tinta-spray.jpg";
+import logoImg from "@/assets/logo-dns.png";
 import { PRONTAS_COLORS, MONTADORAS, type ProntaCor } from "@/data/prontas-colors";
 
 export const Route = createFileRoute("/")({
