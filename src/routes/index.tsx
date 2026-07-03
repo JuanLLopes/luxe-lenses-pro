@@ -23,7 +23,7 @@ import pretinhoImg from "@/assets/pretinho.jpg";
 import canetaImg from "@/assets/caneta-retoque.jpg";
 import personalizadaImg from "@/assets/tinta-personalizada.jpg";
 import tintaImg from "@/assets/tinta-spray.jpg";
-import logoImg from "@/assets/logo-dns.png";
+import logoAsset from "@/assets/logo-dns.png.asset.json";
 import { PRONTAS_COLORS, MONTADORAS, type ProntaCor } from "@/data/prontas-colors";
 
 export const Route = createFileRoute("/")({
@@ -254,9 +254,9 @@ function Index() {
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
           <div className="flex min-w-0 items-center gap-3">
             <img
-              src={logoImg}
+              src={logoAsset.url}
               alt="Logo DNS TINTAS"
-              className="h-10 w-10 shrink-0 rounded-lg object-cover"
+              className="h-10 w-10 shrink-0 rounded-lg object-contain"
             />
             <div className="min-w-0 leading-tight">
               <p className="truncate font-display text-sm font-bold tracking-tight">
