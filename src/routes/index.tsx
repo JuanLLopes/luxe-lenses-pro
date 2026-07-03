@@ -28,13 +28,13 @@ import { PRONTAS_COLORS, MONTADORAS, type ProntaCor } from "@/data/prontas-color
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Catálogo Inteligente | Tintas & Estética Automotiva" },
+      { title: "DNS TINTAS — Catálogo Inteligente" },
       {
         name: "description",
         content:
           "Catálogo de tintas e produtos de estética automotiva. Concorra ao Kit Vonixx no sorteio mensal e acumule selos no Cartão Fidelidade.",
       },
-      { property: "og:title", content: "Catálogo Inteligente | Tintas & Estética Automotiva" },
+      { property: "og:title", content: "DNS TINTAS — Catálogo Inteligente" },
       {
         property: "og:description",
         content:
