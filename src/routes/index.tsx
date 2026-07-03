@@ -202,7 +202,7 @@ function Index() {
 
   const buildWhatsAppMessage = () => {
     const lines: string[] = [];
-    lines.push("🛒 *NOVO PEDIDO — Catálogo Inteligente*");
+    lines.push("🛒 *NOVO PEDIDO — DNS TINTAS*");
     lines.push("");
     lines.push(`👤 *Cliente:* ${customerName.trim()}`);
     lines.push(
