@@ -253,13 +253,15 @@ function Index() {
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
           <div className="flex min-w-0 items-center gap-3">
-            <img
-              src={logoAsset.url}
-              alt="Logo DNS TINTAS"
-              className="h-10 w-10 shrink-0 rounded-lg object-contain"
-            />
+            <div className="shrink-0 rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-border">
+              <img
+                src={logoAsset.url}
+                alt="Logo DNS TINTAS"
+                className="h-14 w-14 object-contain"
+              />
+            </div>
             <div className="min-w-0 leading-tight">
-              <p className="truncate font-display text-sm font-bold tracking-tight">
+              <p className="truncate font-display text-lg font-bold tracking-tight sm:text-xl">
                 DNS TINTAS
               </p>
               <p className="truncate text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
