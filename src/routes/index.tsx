@@ -326,26 +326,18 @@ function Index() {
             {Array.from({ length: 10 }).map((_, i) => {
               const active = i < stamps;
               const isGift = i === 9;
+              const activeColor = isGift ? "var(--success)" : "var(--paint-filled)";
               const bg = active
-                ? isGift
-                  ? "#f0fdf4"
-                  : "#fff5f5"
+                ? isGift ? "#f0fdf4" : "#fff5f5"
                 : "var(--muted)";
-              const borderColor = active
-                ? isGift
-                  ? "var(--success)"
-                  : "var(--paint-filled)"
-                : "var(--border)";
-              const fill = active
-                ? isGift
-                  ? "var(--success)"
-                  : "var(--paint-filled)"
-                : "var(--can-empty)";
+              const borderColor = active ? activeColor : "var(--border)";
               const shadow = active
                 ? isGift
                   ? "0 4px 12px rgba(34, 197, 94, 0.15)"
                   : "0 4px 12px rgba(239, 68, 68, 0.15)"
                 : "none";
+              const canPath =
+                "M19,20H5V8H19M19,3H14V5H10V3H5A2,2 0 0,0 3,5V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V5A2,2 0 0,0 19,3Z";
               return (
                 <div
                   key={i}
@@ -356,16 +348,37 @@ function Index() {
                     boxShadow: shadow,
                   }}
                 >
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="h-8 w-8 transition-all duration-300"
+                  <div
+                    className="relative h-8 w-8"
                     style={{
-                      fill,
-                      transform: active ? "scale(1.08)" : "scale(1)",
+                      animation: active
+                        ? "can-pop 500ms cubic-bezier(0.34, 1.56, 0.64, 1) both"
+                        : undefined,
                     }}
                   >
-                    <path d="M19,20H5V8H19M19,3H14V5H10V3H5A2,2 0 0,0 3,5V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V5A2,2 0 0,0 19,3Z" />
-                  </svg>
+                    {/* Base (empty) can */}
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="absolute inset-0 h-full w-full"
+                      style={{ fill: "var(--can-empty)" }}
+                    >
+                      <path d={canPath} />
+                    </svg>
+                    {/* Filled overlay revealed bottom-up when active */}
+                    {active && (
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="absolute inset-0 h-full w-full"
+                        style={{
+                          fill: activeColor,
+                          animation:
+                            "can-fill-up 700ms cubic-bezier(0.22, 1, 0.36, 1) both",
+                        }}
+                      >
+                        <path d={canPath} />
+                      </svg>
+                    )}
+                  </div>
                 </div>
               );
             })}
