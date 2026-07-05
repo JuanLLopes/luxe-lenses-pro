@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   Sparkles,
-  Gift,
   ShoppingCart,
   Plus,
   Award,
@@ -323,21 +322,53 @@ function Index() {
               {stamps}/10
             </span>
           </div>
-          <div className="mt-3 grid grid-cols-10 gap-1.5">
-            {Array.from({ length: 10 }).map((_, i) => (
-              <div
-                key={i}
-                className={`aspect-square rounded-md border transition-colors ${
-                  i < stamps
-                    ? "border-primary bg-primary text-primary-foreground shadow-[var(--shadow-glow)]"
-                    : "border-border bg-background/40"
-                }`}
-              >
-                {i < stamps && (
-                  <Gift className="m-auto mt-[3px] h-3 w-3" strokeWidth={2.5} />
-                )}
-              </div>
-            ))}
+          <div className="mt-3 grid grid-cols-5 gap-3">
+            {Array.from({ length: 10 }).map((_, i) => {
+              const active = i < stamps;
+              const isGift = i === 9;
+              const bg = active
+                ? isGift
+                  ? "#f0fdf4"
+                  : "#fff5f5"
+                : "var(--muted)";
+              const borderColor = active
+                ? isGift
+                  ? "var(--success)"
+                  : "var(--paint-filled)"
+                : "var(--border)";
+              const fill = active
+                ? isGift
+                  ? "var(--success)"
+                  : "var(--paint-filled)"
+                : "var(--can-empty)";
+              const shadow = active
+                ? isGift
+                  ? "0 4px 12px rgba(34, 197, 94, 0.15)"
+                  : "0 4px 12px rgba(239, 68, 68, 0.15)"
+                : "none";
+              return (
+                <div
+                  key={i}
+                  className="flex aspect-square items-center justify-center rounded-xl transition-all duration-300"
+                  style={{
+                    background: bg,
+                    border: `2px ${active ? "solid" : "dashed"} ${borderColor}`,
+                    boxShadow: shadow,
+                  }}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-8 w-8 transition-all duration-300"
+                    style={{
+                      fill,
+                      transform: active ? "scale(1.08)" : "scale(1)",
+                    }}
+                  >
+                    <path d="M19,20H5V8H19M19,3H14V5H10V3H5A2,2 0 0,0 3,5V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V5A2,2 0 0,0 19,3Z" />
+                  </svg>
+                </div>
+              );
+            })}
           </div>
         </section>
 

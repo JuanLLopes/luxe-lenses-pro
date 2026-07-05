@@ -95,6 +95,9 @@
   --gradient-card: linear-gradient(180deg, #ffffff, #f8fafc);
   --shadow-glow: 0 8px 30px rgba(30, 58, 95, 0.15);
   --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.04);
+  --paint-filled: #ef4444;
+  --can-empty: #cbd5e1;
+  --success: #22c55e;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
