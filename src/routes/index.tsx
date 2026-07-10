@@ -73,6 +73,12 @@ type Product = {
   description: string;
   images: string[];
   variants: Variant[];
+  brand?: string;
+  features?: string[];
+  applications?: string[];
+  colors?: string[];
+  volume?: string;
+  oldPrice?: number;
 };
 
 const ph = (t: string) =>
