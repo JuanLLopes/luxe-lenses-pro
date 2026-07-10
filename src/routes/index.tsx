@@ -28,6 +28,7 @@ import {
 
 import canetaImg from "@/assets/caneta-retoque.jpg";
 import personalizadaImg from "@/assets/tinta-personalizada.jpg";
+import ProductCard from "@/components/ProductCard";
 import tintaImg from "@/assets/tinta-spray.jpg";
 import logoAsset from "@/assets/logo-dns.png.asset.json";
 import { PRONTAS_COLORS, MONTADORAS, type ProntaCor } from "@/data/prontas-colors";
@@ -73,6 +74,12 @@ type Product = {
   description: string;
   images: string[];
   variants: Variant[];
+  brand?: string;
+  features?: string[];
+  applications?: string[];
+  colors?: string[];
+  volume?: string;
+  oldPrice?: number;
 };
 
 const ph = (t: string) =>
@@ -1056,61 +1063,7 @@ function pinturaListFor(sub: PinturaSub): Product[] {
 }
 
 /* ================= Product Card ================= */
-function ProductCard({
-  p, idx, onVariant, onAdd, onOpenLightbox,
-}: {
-  p: Product; idx: number; onVariant: (i: number) => void; onAdd: () => void; onOpenLightbox: (i: number) => void;
-}) {
-  const variant = p.variants[idx];
-  const parc = calcParcelas(variant.price);
-  const pix = calcPix(variant.price);
-  const [imgIdx, setImgIdx] = useState(0);
-  const carouselRef = useRef<number | null>(null);
-  useEffect(() => {
-    if (p.images.length <= 1) return;
-    carouselRef.current = window.setInterval(() => setImgIdx((i) => (i + 1) % p.images.length), 3500);
-    return () => { if (carouselRef.current) window.clearInterval(carouselRef.current); };
-  }, [p.images.length]);
-
-  return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)]">
-      <button onClick={() => onOpenLightbox(imgIdx)} className="relative block aspect-square overflow-hidden bg-background">
-        <img src={p.images[imgIdx]} alt={p.name} loading="lazy" className="h-full w-full object-cover transition-opacity" />
-        {p.images.length > 1 && (
-          <span className="absolute bottom-1.5 right-1.5 rounded-full bg-black/60 px-1.5 py-0.5 text-[9px] font-bold text-white">
-            {imgIdx + 1}/{p.images.length}
-          </span>
-        )}
-      </button>
-      <div className="flex flex-1 flex-col gap-1.5 p-2.5">
-        <p className="text-[12px] font-bold leading-tight line-clamp-2">{p.name}</p>
-        {p.subname && <p className="text-[10px] text-muted-foreground line-clamp-1">{p.subname}</p>}
-        <p className="font-display text-base font-bold text-primary">{BRL(variant.price)}</p>
-        <p className="text-[10px] text-muted-foreground">{parc.parcelas}x de {BRL(parc.valorParcela)} sem juros</p>
-        <p className="text-[10px] font-semibold text-[color:var(--success)]">PIX: {BRL(pix)} <span className="opacity-70">(-3%)</span></p>
-        {p.variants.length > 1 && (
-          <div className="flex flex-wrap gap-1">
-            {p.variants.map((v, i) => {
-              const active = i === idx;
-              return (
-                <button
-                  key={v.label}
-                  onClick={() => onVariant(i)}
-                  className={`rounded-full border px-1.5 py-0.5 text-[10px] font-semibold transition-colors ${active ? "border-primary bg-primary/15 text-primary" : "border-border bg-background/40 text-muted-foreground hover:border-primary/40"}`}
-                >
-                  {v.label}
-                </button>
-              );
-            })}
-          </div>
-        )}
-        <button onClick={onAdd} className="mt-auto inline-flex items-center justify-center gap-1 rounded-lg bg-primary px-2 py-1.5 text-xs font-bold text-primary-foreground shadow-[var(--shadow-glow)] transition-transform active:scale-95">
-          <Plus className="h-3.5 w-3.5" strokeWidth={3} /> Adicionar
-        </button>
-      </div>
-    </div>
-  );
-}
+/* ProductCard extracted to src/components/ProductCard.tsx */
 
 /* ================= Tira-Riscos ================= */
 function TiraRiscosPanel({ onAdd, onOpenHelp }: { onAdd: (item: Omit<CartItem, "uid">) => void; onOpenHelp: () => void }) {
