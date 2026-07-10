@@ -21,7 +21,8 @@ const BRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const calcPix = (v: number) => v * 0.97;
 const calcParcelas = (v: number) => {
-  const parcelas = v >= 100 ? 12 : v >= 50 ? 6 : v >= 20 ? 3 : 1;
+  if (v < 300) return null;
+  const parcelas = 3;
   return { parcelas, valorParcela: v / parcelas };
 };
 
@@ -138,9 +139,11 @@ export default function ProductCard({ p, idx, onVariant, onAdd, onOpenLightbox }
             <p className="font-display text-lg font-bold leading-none text-primary">
               {BRL(price)}
             </p>
-            <p className="text-[10px] text-muted-foreground">
-              ou {parc.parcelas}x de {BRL(parc.valorParcela)} sem juros
-            </p>
+            {parc && (
+              <p className="text-[10px] text-muted-foreground">
+                ou em até {parc.parcelas}x de {BRL(parc.valorParcela)} sem juros
+              </p>
+            )}
             <p className="text-[11px] font-semibold text-[color:var(--success)]">
               PIX {BRL(pix)}{" "}
               <span className="font-normal opacity-70">(-3%)</span>
