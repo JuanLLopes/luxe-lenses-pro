@@ -28,6 +28,7 @@ import {
 
 import canetaImg from "@/assets/caneta-retoque.jpg";
 import personalizadaImg from "@/assets/tinta-personalizada.jpg";
+import ProductCard from "@/components/ProductCard";
 import tintaImg from "@/assets/tinta-spray.jpg";
 import logoAsset from "@/assets/logo-dns.png.asset.json";
 import { PRONTAS_COLORS, MONTADORAS, type ProntaCor } from "@/data/prontas-colors";
