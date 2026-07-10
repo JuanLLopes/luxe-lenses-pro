@@ -284,10 +284,9 @@ const LOJAS = [
 const BRL = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 const calcParcelas = (valor: number) => {
-  const max = 12;
-  const parcelas = valor >= 100 ? max : Math.max(1, Math.min(max, Math.floor(valor / 20)));
-  const p = Math.max(1, parcelas);
-  return { parcelas: p, valorParcela: valor / p };
+  if (valor < 300) return null;
+  const parcelas = 3;
+  return { parcelas, valorParcela: valor / parcelas };
 };
 const calcPix = (valor: number) => valor * 0.97;
 
@@ -435,7 +434,7 @@ function Index() {
     }
     lines.push(`💰 *Subtotal (itens com preço):* ${BRL(cartTotal)}`);
     lines.push(`💠 *PIX (-3%):* ${BRL(pix)}`);
-    lines.push(`💳 *Ou até ${parc.parcelas}x de ${BRL(parc.valorParcela)} sem juros*`);
+    if (parc) lines.push(`💳 *Ou em até ${parc.parcelas}x de ${BRL(parc.valorParcela)} sem juros*`);
     lines.push("");
     lines.push("✅ Pedido feito pelo catálogo — concorrendo ao sorteio mensal Vonixx!");
     return lines.join("\n");
@@ -955,12 +954,17 @@ function Index() {
                 <span className="text-muted-foreground">PIX (-3%)</span>
                 <span className="font-semibold text-[color:var(--success)]">{BRL(calcPix(cartTotal))}</span>
               </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Ou parcelado</span>
-                <span className="font-semibold">
-                  {calcParcelas(cartTotal).parcelas}x de {BRL(calcParcelas(cartTotal).valorParcela)}
-                </span>
-              </div>
+              {(() => {
+                const parc = calcParcelas(cartTotal);
+                return parc ? (
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Ou parcelado</span>
+                    <span className="font-semibold">
+                      {parc.parcelas}x de {BRL(parc.valorParcela)}
+                    </span>
+                  </div>
+                ) : null;
+              })()}
               <div className="mt-1 flex items-center justify-between">
                 <span className="text-xs uppercase tracking-widest text-muted-foreground">Total</span>
                 <span className="font-display text-xl font-bold text-primary">{BRL(cartTotal)}</span>
