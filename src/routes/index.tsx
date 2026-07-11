@@ -431,7 +431,17 @@ function Index() {
   const cartCount = cartItems.length;
   const cartTotal = cartItems.reduce((s, it) => s + (it.sobConsulta ? 0 : it.price), 0);
   const sobConsultaCount = cartItems.filter((it) => it.sobConsulta).length;
-  const stamps = Math.min(10, Math.floor((accumulated + cartTotal) / 100));
+  const STAMP_VALUE = 150;
+  const MAX_STAMPS = 10;
+  const stamps = Math.min(MAX_STAMPS, Math.floor((accumulated + cartTotal) / STAMP_VALUE));
+  const stampsMissing = Math.max(0, MAX_STAMPS - stamps);
+  const stampProgress = (stamps / MAX_STAMPS) * 100;
+  const CLUBE_DNS_REWARDS: { selos: number; nome: string }[] = [
+    { selos: 3, nome: "Microfibra Premium" },
+    { selos: 5, nome: "Revelador de Hologramas" },
+    { selos: 8, nome: "Massa de Polir" },
+    { selos: 10, nome: "Polidor Premium" },
+  ];
 
   useEffect(() => {
     try {
