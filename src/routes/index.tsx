@@ -734,9 +734,9 @@ function Index() {
         <section className="mt-5">
           <div className="grid grid-cols-3 gap-1.5 rounded-2xl border border-border bg-card p-1.5">
             {[
-              { id: "estetica" as const, label: "✨ Estética" },
-              { id: "tintas" as const, label: "🎨 Tintas" },
-              { id: "pintura" as const, label: "🖌️ Pintura" },
+              { id: "estetica" as const, label: "Estética" },
+              { id: "tintas" as const, label: "Tintas" },
+              { id: "pintura" as const, label: "Pintura" },
             ].map((tab) => {
               const active = category === tab.id;
               return (
