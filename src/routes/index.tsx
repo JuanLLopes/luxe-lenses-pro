@@ -190,6 +190,55 @@ const SPRAY_PRODUCTS: Product[] = [
   { id: "spray-emborrachado", name: "Spray Emborrachado", description: "Envelopamento líquido removível.", images: [ph("Spray+Emborrachado")], variants: [{ label: "400ml", price: 49.9 }] },
 ];
 
+// ==================== Estética — mapeamento de subcategorias ====================
+const ESTETICA_SUBCATEGORY_MAP: Record<string, EsteticaSub> = {
+  "blend-paste": "uso-externo",
+  "blend-spray": "uso-externo",
+  "alumax": "uso-externo",
+  "cera-roxa": "uso-externo",
+  "cera-azul": "uso-externo",
+  "cera-amarela": "uso-externo",
+  "cera-preta": "uso-externo",
+  "cera-branca": "uso-externo",
+  "cera-vermelha": "uso-externo",
+  "cera-verde": "uso-externo",
+  "cera-prata": "uso-externo",
+  "cera-dourada": "uso-externo",
+  "polimento-corte": "polimento",
+  "polimento-fino": "polimento",
+  "vitrificador": "polimento",
+  "primer-est": "uso-externo",
+  "desengraxante": "uso-externo",
+  "limpa-pneus": "uso-externo",
+};
+const ESTETICA_ALL: Product[] = ESTETICA_PRODUCTS.map((p) => ({
+  ...p,
+  category: "estetica",
+  subcategory: p.subcategory ?? ESTETICA_SUBCATEGORY_MAP[p.id] ?? "uso-externo",
+}));
+const ESTETICA_SUBCATEGORIES: SubCategoryOption<EsteticaSub>[] = [
+  { id: "uso-externo", label: "🚗 Uso Externo" },
+  { id: "uso-interno", label: "🧽 Uso Interno" },
+  { id: "polimento", label: "✨ Polimento" },
+  { id: "motocicletas", label: "🏍️ Motocicletas" },
+  { id: "acessorios-estetica", label: "🔧 Acessórios" },
+  { id: "maquinas", label: "🛠️ Máquinas" },
+  { id: "kits", label: "📦 Kits" },
+];
+
+// ==================== Pintura — registry (id → produtos) ====================
+const PINTURA_SUBCATEGORIES: SubCategoryOption<PinturaSub>[] = [
+  { id: "verniz", label: "✨ Verniz" },
+  { id: "primer", label: "🎯 Primer" },
+  { id: "thinner", label: "💧 Thinner" },
+  { id: "massa", label: "🧱 Massa" },
+  { id: "complementos", label: "🧰 Complementos" },
+  { id: "lixa", label: "📄 Lixa" },
+  { id: "mascaramento", label: "🎭 Mascaramento" },
+  { id: "acessorios", label: "🔧 Acessórios" },
+  { id: "cola", label: "🧴 Cola" },
+];
+
 // ==================== Pintura subcategorias ====================
 const VERNIZ_PRODUCTS: Product[] = [
   {
