@@ -408,7 +408,8 @@ type Lightbox = { images: string[]; index: number } | null;
 function Index() {
   const [category, setCategory] = useState<Category>("estetica");
   const [paintSub, setPaintSub] = useState<PaintSub>("tira-riscos");
-  const [pinturaSub, setPinturaSub] = useState<PinturaSub>("verniz");
+  const [pinturaSub, setPinturaSub] = useState<PinturaSub | null>(null);
+  const [esteticaSub, setEsteticaSub] = useState<EsteticaSub | null>(null);
   const [search, setSearch] = useState("");
   const [selectedVariant, setSelectedVariant] = useState<Record<string, number>>({});
   const [toast, setToast] = useState<string | null>(null);
@@ -723,19 +724,32 @@ function Index() {
           </div>
         </section>
 
-        {/* Estética */}
+        {/* Estética — arquitetura geral (SubCategorySelector + ProductGrid) */}
         {category === "estetica" && (
-          <section className="mt-4 grid grid-cols-2 gap-3">
-            {filterProducts(ESTETICA_PRODUCTS).map((p) => (
-              <ProductCard
-                key={p.id}
-                p={p}
-                idx={selectedVariant[p.id] ?? 0}
-                onVariant={(i) => setSelectedVariant((s) => ({ ...s, [p.id]: i }))}
-                onAdd={() => addProductToCart(p)}
-                onOpenLightbox={(i) => setLightbox({ images: p.images, index: i })}
+          <section className="mt-4 space-y-3">
+            <SubCategorySelector
+              options={ESTETICA_SUBCATEGORIES}
+              value={esteticaSub}
+              onChange={setEsteticaSub}
+              variant={esteticaSub ? "tabs" : "grid"}
+            />
+            {esteticaSub && (
+              <ProductGrid
+                products={filterProducts(
+                  ESTETICA_ALL.filter((p) => p.subcategory === esteticaSub),
+                )}
+                selectedVariant={selectedVariant}
+                onVariant={(id, i) => setSelectedVariant((s) => ({ ...s, [id]: i }))}
+                onAdd={(p) => addProductToCart(p)}
+                onOpenLightbox={(images, i) => setLightbox({ images, index: i })}
+                emptyLabel="Nenhum produto nesta subcategoria."
               />
-            ))}
+            )}
+            {!esteticaSub && (
+              <p className="text-center text-xs text-muted-foreground">
+                Selecione uma subcategoria acima para ver os produtos.
+              </p>
+            )}
           </section>
         )}
 
@@ -784,51 +798,30 @@ function Index() {
           </section>
         )}
 
-        {/* Pintura */}
+        {/* Pintura — arquitetura geral (SubCategorySelector + ProductGrid) */}
         {category === "pintura" && (
           <section className="mt-4 space-y-3">
-            <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
-              {([
-                { id: "verniz", label: "✨ Verniz" },
-                { id: "primer", label: "🎯 Primer" },
-                { id: "thinner", label: "💧 Thinner" },
-                { id: "massa", label: "🧱 Massa" },
-                { id: "complementos", label: "🧰 Complementos" },
-                { id: "lixa", label: "📄 Lixa" },
-                { id: "mascaramento", label: "🎭 Mascaramento" },
-                { id: "acessorios", label: "🔧 Acessórios" },
-                { id: "cola", label: "🧴 Cola" },
-              ] as { id: PinturaSub; label: string }[]).map((tab) => {
-                const active = pinturaSub === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setPinturaSub(tab.id)}
-                    className={`shrink-0 rounded-xl border px-3 py-2 text-[11px] font-bold transition-all ${
-                      active ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-muted-foreground hover:border-primary/50"
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </div>
-
+            <SubCategorySelector
+              options={PINTURA_SUBCATEGORIES}
+              value={pinturaSub}
+              onChange={setPinturaSub}
+              variant={pinturaSub ? "tabs" : "grid"}
+            />
             {pinturaSub === "lixa" ? (
               <LixaPanel search={search} onAdd={pushCart} />
+            ) : pinturaSub ? (
+              <ProductGrid
+                products={filterProducts(pinturaListFor(pinturaSub))}
+                selectedVariant={selectedVariant}
+                onVariant={(id, i) => setSelectedVariant((s) => ({ ...s, [id]: i }))}
+                onAdd={(p) => addProductToCart(p)}
+                onOpenLightbox={(images, i) => setLightbox({ images, index: i })}
+                emptyLabel="Nenhum produto nesta subcategoria."
+              />
             ) : (
-              <div className="grid grid-cols-2 gap-3">
-                {filterProducts(pinturaListFor(pinturaSub)).map((p) => (
-                  <ProductCard
-                    key={p.id}
-                    p={p}
-                    idx={selectedVariant[p.id] ?? 0}
-                    onVariant={(i) => setSelectedVariant((s) => ({ ...s, [p.id]: i }))}
-                    onAdd={() => addProductToCart(p)}
-                    onOpenLightbox={(i) => setLightbox({ images: p.images, index: i })}
-                  />
-                ))}
-              </div>
+              <p className="text-center text-xs text-muted-foreground">
+                Selecione uma subcategoria acima para ver os produtos.
+              </p>
             )}
           </section>
         )}
