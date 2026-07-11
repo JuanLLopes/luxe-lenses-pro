@@ -29,6 +29,10 @@ import {
 import canetaImg from "@/assets/caneta-retoque.jpg";
 import personalizadaImg from "@/assets/tinta-personalizada.jpg";
 import ProductCard from "@/components/ProductCard";
+import SubCategorySelector, {
+  type SubCategoryOption,
+} from "@/components/catalog/SubCategorySelector";
+import ProductGrid from "@/components/catalog/ProductGrid";
 import tintaImg from "@/assets/tinta-spray.jpg";
 import logoAsset from "@/assets/logo-dns.png.asset.json";
 import { PRONTAS_COLORS, MONTADORAS, type ProntaCor } from "@/data/prontas-colors";
@@ -55,7 +59,21 @@ export const Route = createFileRoute("/")({
 
 type Category = "estetica" | "tintas" | "pintura";
 type PaintSub = "tira-riscos" | "spray" | "prontas" | "pesadas";
-type PinturaSub =
+
+/**
+ * Subcategorias do sistema geral do catálogo (Estética, Pintura, futuras).
+ * NÃO inclui os passos da categoria TINTAS (que tem fluxo especial próprio).
+ */
+export type CatalogSubCategory =
+  // Estética
+  | "uso-externo"
+  | "uso-interno"
+  | "polimento"
+  | "motocicletas"
+  | "acessorios-estetica"
+  | "maquinas"
+  | "kits"
+  // Pintura
   | "verniz"
   | "primer"
   | "thinner"
@@ -65,6 +83,29 @@ type PinturaSub =
   | "mascaramento"
   | "acessorios"
   | "cola";
+
+type PinturaSub = Extract<
+  CatalogSubCategory,
+  | "verniz"
+  | "primer"
+  | "thinner"
+  | "massa"
+  | "complementos"
+  | "lixa"
+  | "mascaramento"
+  | "acessorios"
+  | "cola"
+>;
+type EsteticaSub = Extract<
+  CatalogSubCategory,
+  | "uso-externo"
+  | "uso-interno"
+  | "polimento"
+  | "motocicletas"
+  | "acessorios-estetica"
+  | "maquinas"
+  | "kits"
+>;
 
 type Variant = { label: string; price: number; image?: string };
 type Product = {
@@ -80,6 +121,9 @@ type Product = {
   colors?: string[];
   volume?: string;
   oldPrice?: number;
+  /** Preenchido apenas para produtos das categorias comuns (Estética, Pintura, futuras). */
+  category?: "estetica" | "pintura";
+  subcategory?: CatalogSubCategory;
 };
 
 const ph = (t: string) =>
@@ -144,6 +188,55 @@ const SPRAY_PRODUCTS: Product[] = [
   { id: "spray-verniz", name: "Spray Verniz Brilhante", description: "Proteção e brilho.", images: [ph("Spray+Verniz")], variants: [{ label: "400ml", price: 38.9 }] },
   { id: "spray-primer", name: "Spray Primer", description: "Base cinza para pintura.", images: [ph("Spray+Primer")], variants: [{ label: "400ml", price: 34.9 }] },
   { id: "spray-emborrachado", name: "Spray Emborrachado", description: "Envelopamento líquido removível.", images: [ph("Spray+Emborrachado")], variants: [{ label: "400ml", price: 49.9 }] },
+];
+
+// ==================== Estética — mapeamento de subcategorias ====================
+const ESTETICA_SUBCATEGORY_MAP: Record<string, EsteticaSub> = {
+  "blend-paste": "uso-externo",
+  "blend-spray": "uso-externo",
+  "alumax": "uso-externo",
+  "cera-roxa": "uso-externo",
+  "cera-azul": "uso-externo",
+  "cera-amarela": "uso-externo",
+  "cera-preta": "uso-externo",
+  "cera-branca": "uso-externo",
+  "cera-vermelha": "uso-externo",
+  "cera-verde": "uso-externo",
+  "cera-prata": "uso-externo",
+  "cera-dourada": "uso-externo",
+  "polimento-corte": "polimento",
+  "polimento-fino": "polimento",
+  "vitrificador": "polimento",
+  "primer-est": "uso-externo",
+  "desengraxante": "uso-externo",
+  "limpa-pneus": "uso-externo",
+};
+const ESTETICA_ALL: Product[] = ESTETICA_PRODUCTS.map((p) => ({
+  ...p,
+  category: "estetica",
+  subcategory: p.subcategory ?? ESTETICA_SUBCATEGORY_MAP[p.id] ?? "uso-externo",
+}));
+const ESTETICA_SUBCATEGORIES: SubCategoryOption<EsteticaSub>[] = [
+  { id: "uso-externo", label: "🚗 Uso Externo" },
+  { id: "uso-interno", label: "🧽 Uso Interno" },
+  { id: "polimento", label: "✨ Polimento" },
+  { id: "motocicletas", label: "🏍️ Motocicletas" },
+  { id: "acessorios-estetica", label: "🔧 Acessórios" },
+  { id: "maquinas", label: "🛠️ Máquinas" },
+  { id: "kits", label: "📦 Kits" },
+];
+
+// ==================== Pintura — registry (id → produtos) ====================
+const PINTURA_SUBCATEGORIES: SubCategoryOption<PinturaSub>[] = [
+  { id: "verniz", label: "✨ Verniz" },
+  { id: "primer", label: "🎯 Primer" },
+  { id: "thinner", label: "💧 Thinner" },
+  { id: "massa", label: "🧱 Massa" },
+  { id: "complementos", label: "🧰 Complementos" },
+  { id: "lixa", label: "📄 Lixa" },
+  { id: "mascaramento", label: "🎭 Mascaramento" },
+  { id: "acessorios", label: "🔧 Acessórios" },
+  { id: "cola", label: "🧴 Cola" },
 ];
 
 // ==================== Pintura subcategorias ====================
@@ -315,7 +408,8 @@ type Lightbox = { images: string[]; index: number } | null;
 function Index() {
   const [category, setCategory] = useState<Category>("estetica");
   const [paintSub, setPaintSub] = useState<PaintSub>("tira-riscos");
-  const [pinturaSub, setPinturaSub] = useState<PinturaSub>("verniz");
+  const [pinturaSub, setPinturaSub] = useState<PinturaSub | null>(null);
+  const [esteticaSub, setEsteticaSub] = useState<EsteticaSub | null>(null);
   const [search, setSearch] = useState("");
   const [selectedVariant, setSelectedVariant] = useState<Record<string, number>>({});
   const [toast, setToast] = useState<string | null>(null);
@@ -630,19 +724,32 @@ function Index() {
           </div>
         </section>
 
-        {/* Estética */}
+        {/* Estética — arquitetura geral (SubCategorySelector + ProductGrid) */}
         {category === "estetica" && (
-          <section className="mt-4 grid grid-cols-2 gap-3">
-            {filterProducts(ESTETICA_PRODUCTS).map((p) => (
-              <ProductCard
-                key={p.id}
-                p={p}
-                idx={selectedVariant[p.id] ?? 0}
-                onVariant={(i) => setSelectedVariant((s) => ({ ...s, [p.id]: i }))}
-                onAdd={() => addProductToCart(p)}
-                onOpenLightbox={(i) => setLightbox({ images: p.images, index: i })}
+          <section className="mt-4 space-y-3">
+            <SubCategorySelector
+              options={ESTETICA_SUBCATEGORIES}
+              value={esteticaSub}
+              onChange={setEsteticaSub}
+              variant={esteticaSub ? "tabs" : "grid"}
+            />
+            {esteticaSub && (
+              <ProductGrid
+                products={filterProducts(
+                  ESTETICA_ALL.filter((p) => p.subcategory === esteticaSub),
+                )}
+                selectedVariant={selectedVariant}
+                onVariant={(id, i) => setSelectedVariant((s) => ({ ...s, [id]: i }))}
+                onAdd={(p) => addProductToCart(p)}
+                onOpenLightbox={(images, i) => setLightbox({ images, index: i })}
+                emptyLabel="Nenhum produto nesta subcategoria."
               />
-            ))}
+            )}
+            {!esteticaSub && (
+              <p className="text-center text-xs text-muted-foreground">
+                Selecione uma subcategoria acima para ver os produtos.
+              </p>
+            )}
           </section>
         )}
 
@@ -691,51 +798,30 @@ function Index() {
           </section>
         )}
 
-        {/* Pintura */}
+        {/* Pintura — arquitetura geral (SubCategorySelector + ProductGrid) */}
         {category === "pintura" && (
           <section className="mt-4 space-y-3">
-            <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
-              {([
-                { id: "verniz", label: "✨ Verniz" },
-                { id: "primer", label: "🎯 Primer" },
-                { id: "thinner", label: "💧 Thinner" },
-                { id: "massa", label: "🧱 Massa" },
-                { id: "complementos", label: "🧰 Complementos" },
-                { id: "lixa", label: "📄 Lixa" },
-                { id: "mascaramento", label: "🎭 Mascaramento" },
-                { id: "acessorios", label: "🔧 Acessórios" },
-                { id: "cola", label: "🧴 Cola" },
-              ] as { id: PinturaSub; label: string }[]).map((tab) => {
-                const active = pinturaSub === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setPinturaSub(tab.id)}
-                    className={`shrink-0 rounded-xl border px-3 py-2 text-[11px] font-bold transition-all ${
-                      active ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-muted-foreground hover:border-primary/50"
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </div>
-
+            <SubCategorySelector
+              options={PINTURA_SUBCATEGORIES}
+              value={pinturaSub}
+              onChange={setPinturaSub}
+              variant={pinturaSub ? "tabs" : "grid"}
+            />
             {pinturaSub === "lixa" ? (
               <LixaPanel search={search} onAdd={pushCart} />
+            ) : pinturaSub ? (
+              <ProductGrid
+                products={filterProducts(pinturaListFor(pinturaSub))}
+                selectedVariant={selectedVariant}
+                onVariant={(id, i) => setSelectedVariant((s) => ({ ...s, [id]: i }))}
+                onAdd={(p) => addProductToCart(p)}
+                onOpenLightbox={(images, i) => setLightbox({ images, index: i })}
+                emptyLabel="Nenhum produto nesta subcategoria."
+              />
             ) : (
-              <div className="grid grid-cols-2 gap-3">
-                {filterProducts(pinturaListFor(pinturaSub)).map((p) => (
-                  <ProductCard
-                    key={p.id}
-                    p={p}
-                    idx={selectedVariant[p.id] ?? 0}
-                    onVariant={(i) => setSelectedVariant((s) => ({ ...s, [p.id]: i }))}
-                    onAdd={() => addProductToCart(p)}
-                    onOpenLightbox={(i) => setLightbox({ images: p.images, index: i })}
-                  />
-                ))}
-              </div>
+              <p className="text-center text-xs text-muted-foreground">
+                Selecione uma subcategoria acima para ver os produtos.
+              </p>
             )}
           </section>
         )}
