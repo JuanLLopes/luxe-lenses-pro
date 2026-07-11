@@ -431,7 +431,17 @@ function Index() {
   const cartCount = cartItems.length;
   const cartTotal = cartItems.reduce((s, it) => s + (it.sobConsulta ? 0 : it.price), 0);
   const sobConsultaCount = cartItems.filter((it) => it.sobConsulta).length;
-  const stamps = Math.min(10, Math.floor((accumulated + cartTotal) / 100));
+  const STAMP_VALUE = 150;
+  const MAX_STAMPS = 10;
+  const stamps = Math.min(MAX_STAMPS, Math.floor((accumulated + cartTotal) / STAMP_VALUE));
+  const stampsMissing = Math.max(0, MAX_STAMPS - stamps);
+  const stampProgress = (stamps / MAX_STAMPS) * 100;
+  const CLUBE_DNS_REWARDS: { selos: number; nome: string }[] = [
+    { selos: 3, nome: "Microfibra Premium" },
+    { selos: 5, nome: "Revelador de Hologramas" },
+    { selos: 8, nome: "Massa de Polir" },
+    { selos: 10, nome: "Polidor Premium" },
+  ];
 
   useEffect(() => {
     try {
@@ -631,7 +641,18 @@ function Index() {
           </div>
         </section>
 
-        {/* Loyalty — PRESERVADO */}
+        {/* Incentivo discreto */}
+        <section className="mt-3">
+          <div className="flex items-center gap-2 rounded-xl border border-primary/25 bg-primary/5 px-3 py-2 text-[11.5px] text-foreground/80">
+            <Sparkles className="h-3.5 w-3.5 shrink-0 text-primary" />
+            <p>
+              Faça seu pedido pelo catálogo e acumule selos para trocar por{" "}
+              <span className="font-semibold text-primary">brindes exclusivos</span>.
+            </p>
+          </div>
+        </section>
+
+        {/* Clube DNS — Programa de Fidelidade */}
         <section className="mt-4 rounded-3xl border border-border bg-[image:var(--gradient-card)] p-4 shadow-[var(--shadow-card)]">
           <div className="flex items-start justify-between gap-3">
             <div className="flex min-w-0 items-center gap-2">
@@ -639,42 +660,73 @@ function Index() {
                 <Award className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <p className="font-display text-sm font-bold">Cartão Fidelidade</p>
-                <p className="text-xs text-muted-foreground">R$ 100 = 1 selo · 10 selos = brinde premium</p>
+                <p className="font-display text-sm font-bold">Clube DNS</p>
+                <p className="text-xs text-muted-foreground">A cada R$ 150 em compras, você ganha 1 selo.</p>
               </div>
             </div>
-            <span className="shrink-0 rounded-full bg-primary/15 px-2.5 py-1 text-xs font-bold text-primary">{stamps}/10</span>
+            <span className="shrink-0 rounded-full bg-primary/15 px-2.5 py-1 text-xs font-bold text-primary">{stamps}/{MAX_STAMPS}</span>
           </div>
-          <div className="mt-3 grid grid-cols-5 gap-3">
-            {Array.from({ length: 10 }).map((_, i) => {
-              const active = i < stamps;
-              const isGift = i === 9;
-              const activeColor = isGift ? "var(--success)" : "var(--paint-filled)";
-              const bg = active ? (isGift ? "#f0fdf4" : "#fff5f5") : "var(--muted)";
-              const borderColor = active ? activeColor : "var(--border)";
-              const shadow = active
-                ? isGift ? "0 4px 12px rgba(34, 197, 94, 0.15)" : "0 4px 12px rgba(239, 68, 68, 0.15)"
-                : "none";
-              const canPath = "M19,20H5V8H19M19,3H14V5H10V3H5A2,2 0 0,0 3,5V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V5A2,2 0 0,0 19,3Z";
-              return (
-                <div
-                  key={i}
-                  className="flex aspect-square items-center justify-center rounded-xl transition-all duration-300"
-                  style={{ background: bg, border: `2px ${active ? "solid" : "dashed"} ${borderColor}`, boxShadow: shadow }}
-                >
-                  <div className="relative h-8 w-8" style={{ animation: active ? "can-pop 500ms cubic-bezier(0.34, 1.56, 0.64, 1) both" : undefined }}>
-                    <svg viewBox="0 0 24 24" className="absolute inset-0 h-full w-full" style={{ fill: "var(--can-empty)" }}>
-                      <path d={canPath} />
-                    </svg>
-                    {active && (
-                      <svg viewBox="0 0 24 24" className="absolute inset-0 h-full w-full" style={{ fill: activeColor, animation: "can-fill-up 700ms cubic-bezier(0.22, 1, 0.36, 1) both" }}>
-                        <path d={canPath} />
-                      </svg>
-                    )}
+
+          {/* Barra de progresso */}
+          <div className="mt-3">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-primary transition-all duration-500"
+                style={{ width: `${stampProgress}%` }}
+              />
+            </div>
+            <div className="mt-2 flex items-center justify-between text-[11px]">
+              <span aria-hidden className="font-bold tracking-widest text-primary">
+                {"★".repeat(stamps)}
+                <span className="text-muted-foreground/60">{"☆".repeat(MAX_STAMPS - stamps)}</span>
+              </span>
+              <span className="font-semibold text-muted-foreground">
+                {stamps} de {MAX_STAMPS} selos
+              </span>
+            </div>
+            <p className="mt-2 text-[11.5px] text-foreground/80">
+              {stampsMissing > 0
+                ? <>Faltam apenas <span className="font-bold text-primary">{stampsMissing} {stampsMissing === 1 ? "selo" : "selos"}</span> para desbloquear o próximo prêmio.</>
+                : <span className="font-bold text-[color:var(--success)]">Parabéns! Você desbloqueou o prêmio máximo do Clube DNS.</span>}
+            </p>
+          </div>
+
+          {/* Catálogo de recompensas */}
+          <div className="mt-4">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              Suas conquistas
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {CLUBE_DNS_REWARDS.map((r) => {
+                const unlocked = stamps >= r.selos;
+                return (
+                  <div
+                    key={r.selos}
+                    className={`flex items-center gap-2 rounded-xl border p-2.5 transition-all ${
+                      unlocked
+                        ? "border-[color:var(--success)]/50 bg-[color:var(--success)]/5"
+                        : "border-border bg-background/40"
+                    }`}
+                  >
+                    <div
+                      className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[11px] font-bold ${
+                        unlocked
+                          ? "bg-[color:var(--success)] text-white"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {r.selos}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                        {r.selos} selos
+                      </p>
+                      <p className="truncate text-xs font-semibold text-foreground">{r.nome}</p>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </section>
 
@@ -682,9 +734,9 @@ function Index() {
         <section className="mt-5">
           <div className="grid grid-cols-3 gap-1.5 rounded-2xl border border-border bg-card p-1.5">
             {[
-              { id: "estetica" as const, label: "✨ Estética" },
-              { id: "tintas" as const, label: "🎨 Tintas" },
-              { id: "pintura" as const, label: "🖌️ Pintura" },
+              { id: "estetica" as const, label: "Estética" },
+              { id: "tintas" as const, label: "Tintas" },
+              { id: "pintura" as const, label: "Pintura" },
             ].map((tab) => {
               const active = category === tab.id;
               return (
