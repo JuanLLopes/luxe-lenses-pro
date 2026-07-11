@@ -29,6 +29,10 @@ import {
 import canetaImg from "@/assets/caneta-retoque.jpg";
 import personalizadaImg from "@/assets/tinta-personalizada.jpg";
 import ProductCard from "@/components/ProductCard";
+import SubCategorySelector, {
+  type SubCategoryOption,
+} from "@/components/catalog/SubCategorySelector";
+import ProductGrid from "@/components/catalog/ProductGrid";
 import tintaImg from "@/assets/tinta-spray.jpg";
 import logoAsset from "@/assets/logo-dns.png.asset.json";
 import { PRONTAS_COLORS, MONTADORAS, type ProntaCor } from "@/data/prontas-colors";
@@ -55,7 +59,21 @@ export const Route = createFileRoute("/")({
 
 type Category = "estetica" | "tintas" | "pintura";
 type PaintSub = "tira-riscos" | "spray" | "prontas" | "pesadas";
-type PinturaSub =
+
+/**
+ * Subcategorias do sistema geral do catálogo (Estética, Pintura, futuras).
+ * NÃO inclui os passos da categoria TINTAS (que tem fluxo especial próprio).
+ */
+export type CatalogSubCategory =
+  // Estética
+  | "uso-externo"
+  | "uso-interno"
+  | "polimento"
+  | "motocicletas"
+  | "acessorios-estetica"
+  | "maquinas"
+  | "kits"
+  // Pintura
   | "verniz"
   | "primer"
   | "thinner"
@@ -65,6 +83,29 @@ type PinturaSub =
   | "mascaramento"
   | "acessorios"
   | "cola";
+
+type PinturaSub = Extract<
+  CatalogSubCategory,
+  | "verniz"
+  | "primer"
+  | "thinner"
+  | "massa"
+  | "complementos"
+  | "lixa"
+  | "mascaramento"
+  | "acessorios"
+  | "cola"
+>;
+type EsteticaSub = Extract<
+  CatalogSubCategory,
+  | "uso-externo"
+  | "uso-interno"
+  | "polimento"
+  | "motocicletas"
+  | "acessorios-estetica"
+  | "maquinas"
+  | "kits"
+>;
 
 type Variant = { label: string; price: number; image?: string };
 type Product = {
@@ -80,6 +121,9 @@ type Product = {
   colors?: string[];
   volume?: string;
   oldPrice?: number;
+  /** Preenchido apenas para produtos das categorias comuns (Estética, Pintura, futuras). */
+  category?: "estetica" | "pintura";
+  subcategory?: CatalogSubCategory;
 };
 
 const ph = (t: string) =>
