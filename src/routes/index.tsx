@@ -773,7 +773,7 @@ function Index() {
 
         {/* Sticky cart summary */}
         {cartCount > 0 && (
-          <div className="fixed inset-x-0 bottom-3 z-40 mx-auto max-w-2xl px-4">
+          <div className="fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-40 mx-auto max-w-2xl px-4">
             <button
               onClick={() => setShowCart(true)}
               className="flex w-full items-center justify-between gap-3 rounded-2xl border border-primary/40 bg-card/95 px-4 py-3 text-left shadow-[var(--shadow-glow)] backdrop-blur transition-transform active:scale-[0.99]"
@@ -831,7 +831,7 @@ function Index() {
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           aria-label="Voltar ao topo"
-          className="fixed bottom-24 right-4 z-40 grid h-12 w-12 place-items-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-glow)] transition-transform hover:scale-105"
+          className="fixed bottom-[calc(8.5rem+env(safe-area-inset-bottom))] right-4 z-40 grid h-12 w-12 place-items-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-glow)] transition-transform hover:scale-105"
         >
           <ArrowUp className="h-5 w-5" />
         </button>
