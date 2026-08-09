@@ -1054,7 +1054,7 @@ function Index() {
               </button>
             </div>
             <div className="space-y-3 p-5">
-              <p className="text-xs text-muted-foreground">Precisamos do seu nome e WhatsApp para enviar o pedido e acumular seus selos do Cartão Fidelidade.</p>
+              <p className="text-xs text-muted-foreground">Precisamos do seu nome e WhatsApp para enviar o pedido.</p>
               <div>
                 <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-primary">Nome</label>
                 <input type="text" value={customerName} onChange={(e) => setCustomerName(e.target.value.slice(0, 80))} placeholder="Nome completo" className="w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm focus:border-primary focus:outline-none" />
