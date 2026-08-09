@@ -58,12 +58,12 @@ export default function ProductCard({ p, idx, onVariant, onAdd, onOpenLightbox }
 
   return (
     <>
-      <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-glow)]">
+      <article className="group relative flex h-full min-w-0 flex-col rounded-2xl border border-border bg-card shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-glow)]">
         {/* Image */}
         <button
           type="button"
           onClick={() => onOpenLightbox(imgIdx)}
-          className="relative block aspect-square overflow-hidden bg-white"
+          className="relative block aspect-square shrink-0 overflow-hidden rounded-t-2xl bg-white"
           aria-label={`Ver imagem de ${p.name}`}
         >
           <img
@@ -83,25 +83,25 @@ export default function ProductCard({ p, idx, onVariant, onAdd, onOpenLightbox }
         </button>
 
         {/* Body */}
-        <div className="flex flex-1 flex-col gap-1.5 p-3">
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5 p-3">
           {p.brand && (
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            <p className="break-words text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
               {p.brand}
             </p>
           )}
-          <h3 className="text-sm font-bold leading-tight text-foreground line-clamp-2">
+          <h3 className="break-words text-sm font-bold leading-tight text-foreground">
             {p.name}
           </h3>
           {p.subname && (
-            <p className="text-[11px] font-medium text-muted-foreground line-clamp-1">
+            <p className="break-words text-[11px] font-medium text-muted-foreground">
               {p.subname}
             </p>
           )}
-          <p className="text-[11px] leading-snug text-muted-foreground line-clamp-3">
+          <p className="break-words text-[11px] leading-snug text-muted-foreground">
             {p.description}
           </p>
 
-          <p className="text-[11px] font-semibold text-foreground/80">
+          <p className="break-words text-[11px] font-semibold text-foreground/80">
             Volume:{" "}
             <span className="font-normal text-muted-foreground">
               {p.volume ?? variant.label}
@@ -117,7 +117,7 @@ export default function ProductCard({ p, idx, onVariant, onAdd, onOpenLightbox }
                     key={v.label}
                     type="button"
                     onClick={() => onVariant(i)}
-                    className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold transition-colors ${
+                    className={`max-w-full break-words rounded-full border px-2 py-0.5 text-[10px] font-semibold transition-colors ${
                       active
                         ? "border-primary bg-primary/15 text-primary"
                         : "border-border bg-background/40 text-muted-foreground hover:border-primary/40"
@@ -136,34 +136,34 @@ export default function ProductCard({ p, idx, onVariant, onAdd, onOpenLightbox }
                 {BRL(p.oldPrice)}
               </p>
             )}
-            <p className="font-display text-lg font-bold leading-none text-primary">
+            <p className="break-words font-display text-lg font-bold leading-tight text-primary">
               {BRL(price)}
             </p>
             {parc && (
-              <p className="text-[10px] text-muted-foreground">
+              <p className="break-words text-[10px] text-muted-foreground">
                 ou em até {parc.parcelas}x de {BRL(parc.valorParcela)} sem juros
               </p>
             )}
-            <p className="text-[11px] font-semibold text-[color:var(--success)]">
+            <p className="break-words text-[11px] font-semibold text-[color:var(--success)]">
               PIX {BRL(pix)}{" "}
               <span className="font-normal opacity-70">(-3%)</span>
             </p>
           </div>
 
-          <div className="mt-auto flex gap-1.5 pt-2">
+          <div className="mt-auto flex flex-wrap gap-1.5 pt-2">
             <button
               type="button"
               onClick={() => setOpenDetails(true)}
-              className="inline-flex flex-1 items-center justify-center gap-1 rounded-lg border border-border bg-background px-2 py-1.5 text-[11px] font-semibold text-foreground transition-colors hover:border-primary/50 hover:text-primary"
+              className="inline-flex min-w-[7rem] flex-1 items-center justify-center gap-1 rounded-lg border border-border bg-background px-2 py-1.5 text-[11px] font-semibold text-foreground transition-colors hover:border-primary/50 hover:text-primary"
             >
-              <Eye className="h-3.5 w-3.5" /> Ver detalhes
+              <Eye className="h-3.5 w-3.5 shrink-0" /> Ver detalhes
             </button>
             <button
               type="button"
               onClick={onAdd}
-              className="inline-flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary px-2 py-1.5 text-[11px] font-bold text-primary-foreground shadow-[var(--shadow-glow)] transition-transform active:scale-95"
+              className="inline-flex min-w-[7rem] flex-1 items-center justify-center gap-1 rounded-lg bg-primary px-2 py-1.5 text-[11px] font-bold text-primary-foreground shadow-[var(--shadow-glow)] transition-transform active:scale-95"
             >
-              <ShoppingCart className="h-3.5 w-3.5" strokeWidth={2.5} /> Comprar
+              <ShoppingCart className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} /> Comprar
             </button>
           </div>
         </div>
