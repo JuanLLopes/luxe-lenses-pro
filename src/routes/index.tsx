@@ -592,6 +592,37 @@ function Index() {
     );
   };
 
+  const scrollToMenu = () => categoryRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const focusSearch = () => {
+    searchInputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    window.setTimeout(() => searchInputRef.current?.focus(), 350);
+  };
+  const shareCatalog = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "DNS TINTAS — Catálogo Inteligente", url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      showToast("Link do catálogo copiado!");
+    } catch {
+      /* cancelado */
+    }
+  };
+  const openCartFromNav = () => (cartCount > 0 ? setShowCart(true) : showToast("Seu carrinho está vazio."));
+
+  const _unusedFilter = (list: Product[]) => {
+    const q = search.trim().toLowerCase();
+    if (!q) return list;
+    return list.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        (p.subname?.toLowerCase().includes(q) ?? false) ||
+        p.description.toLowerCase().includes(q),
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background font-sans text-foreground">
       {/* Top bar — PRESERVADO */}
