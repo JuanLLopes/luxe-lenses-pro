@@ -4,8 +4,6 @@ import {
   Sparkles,
   ShoppingCart,
   Plus,
-  Award,
-  Trophy,
   HelpCircle,
   X,
   Upload,
@@ -33,6 +31,8 @@ import SubCategorySelector, {
   type SubCategoryOption,
 } from "@/components/catalog/SubCategorySelector";
 import ProductGrid from "@/components/catalog/ProductGrid";
+import PromoCarousel, { type PromoSlide } from "@/components/PromoCarousel";
+import BottomNav from "@/components/BottomNav";
 import tintaImg from "@/assets/tinta-spray.jpg";
 import logoAsset from "@/assets/logo-dns.png.asset.json";
 import { PRONTAS_COLORS, MONTADORAS, type ProntaCor } from "@/data/prontas-colors";
@@ -44,13 +44,13 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Catálogo de tintas e produtos de estética automotiva. Concorra ao Kit Vonixx no sorteio mensal e acumule selos no Cartão Fidelidade.",
+          "Catálogo de tintas automotivas, estética e materiais de pintura da DNS Tintas. Escolha os produtos e envie seu pedido pelo WhatsApp.",
       },
       { property: "og:title", content: "DNS TINTAS — Catálogo Inteligente" },
       {
         property: "og:description",
         content:
-          "Faça pedidos pelo catálogo, concorra ao Kit Vonixx e ganhe brindes premium com o Cartão Fidelidade.",
+          "Tintas, retoques, estética automotiva e materiais de pintura. Monte seu pedido em poucos toques.",
       },
     ],
   }),
@@ -427,21 +427,16 @@ function Index() {
   const [lightbox, setLightbox] = useState<Lightbox>(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [accumulated, setAccumulated] = useState(0);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const categoryRef = useRef<HTMLElement>(null);
+
+  /** Imagens promocionais da DNS — adicionar aqui quando disponíveis. */
+  const PROMO_SLIDES: PromoSlide[] = [];
 
   const cartCount = cartItems.length;
   const cartTotal = cartItems.reduce((s, it) => s + (it.sobConsulta ? 0 : it.price), 0);
   const sobConsultaCount = cartItems.filter((it) => it.sobConsulta).length;
-  const STAMP_VALUE = 150;
-  const MAX_STAMPS = 10;
-  const stamps = Math.min(MAX_STAMPS, Math.floor((accumulated + cartTotal) / STAMP_VALUE));
-  const stampsMissing = Math.max(0, MAX_STAMPS - stamps);
-  const stampProgress = (stamps / MAX_STAMPS) * 100;
-  const CLUBE_DNS_REWARDS: { selos: number; nome: string }[] = [
-    { selos: 3, nome: "Microfibra Premium" },
-    { selos: 5, nome: "Revelador de Hologramas" },
-    { selos: 8, nome: "Massa de Polir" },
-    { selos: 10, nome: "Polidor Premium" },
-  ];
+  void accumulated;
 
   useEffect(() => {
     try {
@@ -540,7 +535,7 @@ function Index() {
     lines.push(`💠 *PIX (-3%):* ${BRL(pix)}`);
     if (parc) lines.push(`💳 *Ou em até ${parc.parcelas}x de ${BRL(parc.valorParcela)} sem juros*`);
     lines.push("");
-    lines.push("✅ Pedido feito pelo catálogo — concorrendo ao sorteio mensal Vonixx!");
+    lines.push("✅ Pedido feito pelo catálogo DNS Tintas.");
     return lines.join("\n");
   };
 
@@ -597,6 +592,26 @@ function Index() {
     );
   };
 
+  const scrollToMenu = () => categoryRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const focusSearch = () => {
+    searchInputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    window.setTimeout(() => searchInputRef.current?.focus(), 350);
+  };
+  const shareCatalog = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "DNS TINTAS — Catálogo Inteligente", url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      showToast("Link do catálogo copiado!");
+    } catch {
+      /* cancelado */
+    }
+  };
+  const openCartFromNav = () => (cartCount > 0 ? setShowCart(true) : showToast("Seu carrinho está vazio."));
+
   return (
     <div className="min-h-screen bg-background font-sans text-foreground">
       {/* Top bar — PRESERVADO */}
@@ -625,113 +640,10 @@ function Index() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-2xl px-4 pb-28 pt-4">
-        {/* Promo — PRESERVADO */}
-        <section className="relative overflow-hidden rounded-3xl p-5 shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-promo)" }}>
-          <div className="absolute -right-12 -top-12 h-44 w-44 rounded-full bg-white/10 blur-2xl" />
-          <div className="absolute -bottom-16 -left-10 h-44 w-44 rounded-full bg-cyan-300/20 blur-3xl" />
-          <div className="relative">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-white backdrop-blur-sm">
-              <Trophy className="h-3 w-3" /> Sorteio Mensal
-            </div>
-            <h1 className="mt-3 font-display text-xl font-bold leading-tight text-white sm:text-2xl">
-              Pedidos pelo catálogo concorrem a 1 Kit de Estética <span className="text-cyan-200">Vonixx</span>!
-            </h1>
-            <p className="mt-1.5 text-sm text-white/85">A cada compra, um cupom automático para o sorteio do mês.</p>
-          </div>
-        </section>
-
-        {/* Incentivo discreto */}
-        <section className="mt-3">
-          <div className="flex items-center gap-2 rounded-xl border border-primary/25 bg-primary/5 px-3 py-2 text-[11.5px] text-foreground/80">
-            <Sparkles className="h-3.5 w-3.5 shrink-0 text-primary" />
-            <p>
-              Faça seu pedido pelo catálogo e acumule selos para trocar por{" "}
-              <span className="font-semibold text-primary">brindes exclusivos</span>.
-            </p>
-          </div>
-        </section>
-
-        {/* Clube DNS — Programa de Fidelidade */}
-        <section className="mt-4 rounded-3xl border border-border bg-[image:var(--gradient-card)] p-4 shadow-[var(--shadow-card)]">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-2">
-              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
-                <Award className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="font-display text-sm font-bold">Clube DNS</p>
-                <p className="text-xs text-muted-foreground">A cada R$ 150 em compras, você ganha 1 selo.</p>
-              </div>
-            </div>
-            <span className="shrink-0 rounded-full bg-primary/15 px-2.5 py-1 text-xs font-bold text-primary">{stamps}/{MAX_STAMPS}</span>
-          </div>
-
-          {/* Barra de progresso */}
-          <div className="mt-3">
-            <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-              <div
-                className="h-full rounded-full bg-primary transition-all duration-500"
-                style={{ width: `${stampProgress}%` }}
-              />
-            </div>
-            <div className="mt-2 flex items-center justify-between text-[11px]">
-              <span aria-hidden className="font-bold tracking-widest text-primary">
-                {"★".repeat(stamps)}
-                <span className="text-muted-foreground/60">{"☆".repeat(MAX_STAMPS - stamps)}</span>
-              </span>
-              <span className="font-semibold text-muted-foreground">
-                {stamps} de {MAX_STAMPS} selos
-              </span>
-            </div>
-            <p className="mt-2 text-[11.5px] text-foreground/80">
-              {stampsMissing > 0
-                ? <>Faltam apenas <span className="font-bold text-primary">{stampsMissing} {stampsMissing === 1 ? "selo" : "selos"}</span> para desbloquear o próximo prêmio.</>
-                : <span className="font-bold text-[color:var(--success)]">Parabéns! Você desbloqueou o prêmio máximo do Clube DNS.</span>}
-            </p>
-          </div>
-
-          {/* Catálogo de recompensas */}
-          <div className="mt-4">
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Suas conquistas
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              {CLUBE_DNS_REWARDS.map((r) => {
-                const unlocked = stamps >= r.selos;
-                return (
-                  <div
-                    key={r.selos}
-                    className={`flex items-center gap-2 rounded-xl border p-2.5 transition-all ${
-                      unlocked
-                        ? "border-[color:var(--success)]/50 bg-[color:var(--success)]/5"
-                        : "border-border bg-background/40"
-                    }`}
-                  >
-                    <div
-                      className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[11px] font-bold ${
-                        unlocked
-                          ? "bg-[color:var(--success)] text-white"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      {r.selos}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                        {r.selos} selos
-                      </p>
-                      <p className="truncate text-xs font-semibold text-foreground">{r.nome}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
+      <main className="mx-auto max-w-2xl px-4 pb-40 pt-4">
+        <PromoCarousel slides={PROMO_SLIDES} />
         {/* Category tabs */}
-        <section className="mt-5">
+        <section className="mt-5" ref={categoryRef}>
           <div className="grid grid-cols-3 gap-1.5 rounded-2xl border border-border bg-card p-1.5">
             {[
               { id: "estetica" as const, label: "Estética" },
@@ -759,6 +671,7 @@ function Index() {
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
+              ref={searchInputRef}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="🔎 Buscar produtos no catálogo..."
@@ -880,7 +793,7 @@ function Index() {
 
         {/* Sticky cart summary */}
         {cartCount > 0 && (
-          <div className="fixed inset-x-0 bottom-3 z-40 mx-auto max-w-2xl px-4">
+          <div className="fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-40 mx-auto max-w-2xl px-4">
             <button
               onClick={() => setShowCart(true)}
               className="flex w-full items-center justify-between gap-3 rounded-2xl border border-primary/40 bg-card/95 px-4 py-3 text-left shadow-[var(--shadow-glow)] backdrop-blur transition-transform active:scale-[0.99]"
@@ -934,11 +847,20 @@ function Index() {
         </div>
       </footer>
 
+      <BottomNav
+        cartCount={cartCount}
+        onMenu={scrollToMenu}
+        onSearch={focusSearch}
+        whatsappUrl={`https://wa.me/${loja.whatsapp}`}
+        onShare={shareCatalog}
+        onCart={openCartFromNav}
+      />
+
       {showBackToTop && (
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           aria-label="Voltar ao topo"
-          className="fixed bottom-24 right-4 z-40 grid h-12 w-12 place-items-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-glow)] transition-transform hover:scale-105"
+          className="fixed bottom-[calc(8.5rem+env(safe-area-inset-bottom))] right-4 z-40 grid h-12 w-12 place-items-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-glow)] transition-transform hover:scale-105"
         >
           <ArrowUp className="h-5 w-5" />
         </button>
@@ -1132,7 +1054,7 @@ function Index() {
               </button>
             </div>
             <div className="space-y-3 p-5">
-              <p className="text-xs text-muted-foreground">Precisamos do seu nome e WhatsApp para enviar o pedido e acumular seus selos do Cartão Fidelidade.</p>
+              <p className="text-xs text-muted-foreground">Precisamos do seu nome e WhatsApp para enviar o pedido.</p>
               <div>
                 <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-primary">Nome</label>
                 <input type="text" value={customerName} onChange={(e) => setCustomerName(e.target.value.slice(0, 80))} placeholder="Nome completo" className="w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm focus:border-primary focus:outline-none" />
