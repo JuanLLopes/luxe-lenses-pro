@@ -427,21 +427,16 @@ function Index() {
   const [lightbox, setLightbox] = useState<Lightbox>(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [accumulated, setAccumulated] = useState(0);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const categoryRef = useRef<HTMLDivElement>(null);
+
+  /** Imagens promocionais da DNS — adicionar aqui quando disponíveis. */
+  const PROMO_SLIDES: PromoSlide[] = [];
 
   const cartCount = cartItems.length;
   const cartTotal = cartItems.reduce((s, it) => s + (it.sobConsulta ? 0 : it.price), 0);
   const sobConsultaCount = cartItems.filter((it) => it.sobConsulta).length;
-  const STAMP_VALUE = 150;
-  const MAX_STAMPS = 10;
-  const stamps = Math.min(MAX_STAMPS, Math.floor((accumulated + cartTotal) / STAMP_VALUE));
-  const stampsMissing = Math.max(0, MAX_STAMPS - stamps);
-  const stampProgress = (stamps / MAX_STAMPS) * 100;
-  const CLUBE_DNS_REWARDS: { selos: number; nome: string }[] = [
-    { selos: 3, nome: "Microfibra Premium" },
-    { selos: 5, nome: "Revelador de Hologramas" },
-    { selos: 8, nome: "Massa de Polir" },
-    { selos: 10, nome: "Polidor Premium" },
-  ];
+  void accumulated;
 
   useEffect(() => {
     try {
