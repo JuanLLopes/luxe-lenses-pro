@@ -4,8 +4,6 @@ import {
   Sparkles,
   ShoppingCart,
   Plus,
-  Award,
-  Trophy,
   HelpCircle,
   X,
   Upload,
@@ -33,6 +31,8 @@ import SubCategorySelector, {
   type SubCategoryOption,
 } from "@/components/catalog/SubCategorySelector";
 import ProductGrid from "@/components/catalog/ProductGrid";
+import PromoCarousel, { type PromoSlide } from "@/components/PromoCarousel";
+import BottomNav from "@/components/BottomNav";
 import tintaImg from "@/assets/tinta-spray.jpg";
 import logoAsset from "@/assets/logo-dns.png.asset.json";
 import { PRONTAS_COLORS, MONTADORAS, type ProntaCor } from "@/data/prontas-colors";
@@ -44,13 +44,13 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Catálogo de tintas e produtos de estética automotiva. Concorra ao Kit Vonixx no sorteio mensal e acumule selos no Cartão Fidelidade.",
+          "Catálogo de tintas automotivas, estética e materiais de pintura da DNS Tintas. Escolha os produtos e envie seu pedido pelo WhatsApp.",
       },
       { property: "og:title", content: "DNS TINTAS — Catálogo Inteligente" },
       {
         property: "og:description",
         content:
-          "Faça pedidos pelo catálogo, concorra ao Kit Vonixx e ganhe brindes premium com o Cartão Fidelidade.",
+          "Tintas, retoques, estética automotiva e materiais de pintura. Monte seu pedido em poucos toques.",
       },
     ],
   }),
