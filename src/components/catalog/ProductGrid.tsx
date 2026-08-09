@@ -25,7 +25,7 @@ export default function ProductGrid<P extends ProductCardProduct>({
     );
   }
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-2 items-stretch gap-3">
       {products.map((p) => (
         <ProductCard
           key={p.id}
