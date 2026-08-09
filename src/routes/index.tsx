@@ -847,6 +847,15 @@ function Index() {
         </div>
       </footer>
 
+      <BottomNav
+        cartCount={cartCount}
+        onMenu={scrollToMenu}
+        onSearch={focusSearch}
+        whatsappUrl={`https://wa.me/${loja.whatsapp}`}
+        onShare={shareCatalog}
+        onCart={openCartFromNav}
+      />
+
       {showBackToTop && (
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
