@@ -620,10 +620,10 @@ function Index() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-2xl px-4 pb-28 pt-4">
+      <main className="mx-auto max-w-2xl px-4 pb-40 pt-4">
         <PromoCarousel slides={PROMO_SLIDES} />
         {/* Category tabs */}
-        <section className="mt-5">
+        <section className="mt-5" ref={categoryRef}>
           <div className="grid grid-cols-3 gap-1.5 rounded-2xl border border-border bg-card p-1.5">
             {[
               { id: "estetica" as const, label: "Estética" },
