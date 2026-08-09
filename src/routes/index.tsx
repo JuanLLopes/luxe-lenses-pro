@@ -612,17 +612,6 @@ function Index() {
   };
   const openCartFromNav = () => (cartCount > 0 ? setShowCart(true) : showToast("Seu carrinho está vazio."));
 
-  const _unusedFilter = (list: Product[]) => {
-    const q = search.trim().toLowerCase();
-    if (!q) return list;
-    return list.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        (p.subname?.toLowerCase().includes(q) ?? false) ||
-        p.description.toLowerCase().includes(q),
-    );
-  };
-
   return (
     <div className="min-h-screen bg-background font-sans text-foreground">
       {/* Top bar — PRESERVADO */}
