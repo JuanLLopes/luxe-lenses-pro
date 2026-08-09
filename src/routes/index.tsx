@@ -428,7 +428,7 @@ function Index() {
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [accumulated, setAccumulated] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const categoryRef = useRef<HTMLDivElement>(null);
+  const categoryRef = useRef<HTMLElement>(null);
 
   /** Imagens promocionais da DNS — adicionar aqui quando disponíveis. */
   const PROMO_SLIDES: PromoSlide[] = [];
@@ -535,7 +535,7 @@ function Index() {
     lines.push(`💠 *PIX (-3%):* ${BRL(pix)}`);
     if (parc) lines.push(`💳 *Ou em até ${parc.parcelas}x de ${BRL(parc.valorParcela)} sem juros*`);
     lines.push("");
-    lines.push("✅ Pedido feito pelo catálogo — concorrendo ao sorteio mensal Vonixx!");
+    lines.push("✅ Pedido feito pelo catálogo DNS Tintas.");
     return lines.join("\n");
   };
 
@@ -651,6 +651,7 @@ function Index() {
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
+              ref={searchInputRef}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="🔎 Buscar produtos no catálogo..."
